@@ -40,7 +40,7 @@ sub _build_command_list{ Device::CoMedia::C328_7640::Commands->new() }
 
 sub change_color_type{
     my ($self, $config) = @_;
-    $self->comm_object->set($config);
+    $self->comm_object->set_option($config);
 }
 
 

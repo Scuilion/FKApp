@@ -2,3 +2,4 @@ KPApp.kpf
 CommConfig
 *.sp
 koi8
+hashObject.pm

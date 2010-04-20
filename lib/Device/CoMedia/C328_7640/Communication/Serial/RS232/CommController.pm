@@ -28,17 +28,18 @@ has config_file => (
     required => 1,
     lazy=>1,
 );
+
 has 'configuration' => (
       traits    => ['Hash'],
       is        => 'rw',
       isa       => 'HashRef[Str]',
-      default   => sub  {color_type           => '07',
-                        preview_resolution    => '07',
-                        jpeg_resolution       => '07',
-                        picture_type          => '01',
-                        snapshot_type         => '05',
-                        package_size          => '512',
-                        baudrate              => '115200', } ,
+      default   => sub  {{color_type           => "07",
+                        preview_resolution    => "07",
+                        jpeg_resolution       => "07",
+                        picture_type          => "01",
+                        snapshot_type         => "05",
+                        package_size          => "512",
+                        baudrate              => "115200", } },
       handles   => {
           set_option     => 'set',
           get_option     => 'get',
@@ -110,3 +111,4 @@ sub format_for_print{
 no Moose;
 __PACKAGE__->meta->make_immutable();
 1;
+

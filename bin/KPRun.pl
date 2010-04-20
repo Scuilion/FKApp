@@ -11,6 +11,7 @@ use Device::CoMedia::C328_7640::Configuration::Constants;
 
 my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 $cam_interface->change_color_type( CT_2_B_GRAY );
+die;
 #$cam_interface->change_preview_res();
 #$cam_interface->change_jpeg_res();
 #$cam_interface->change_picture_type();
