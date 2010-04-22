@@ -8,6 +8,28 @@ use Devel::Dwarn;
 use Device::CoMedia::C328_7640::Configuration::Exceptions;
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
+has 'configuration' => (
+      traits    => ['Hash'],
+      is        => 'rw',
+      isa       => 'HashRef[Str]',
+      default   => sub  {{color_type           => "07",
+                        preview_resolution    => "07",
+                        jpeg_resolution       => "07",
+                        picture_type          => "00",
+                        snapshot_type         => "05",
+                        package_size          => "512",
+                        baudrate              => "115200", } },
+      handles   => {
+          set_option     => 'set',
+          get_option     => 'get',
+          has_no_options => 'is_empty',
+          num_options    => 'count',
+          delete_option  => 'delete',
+          pairs          => 'kv',
+      },
+
+  );
+
 my $command_dispatch_table= {
     INITIAL()           => \&initialize_01,
     GET_PICTURE()       => \&get_picture_04,
@@ -37,15 +59,20 @@ sub send_command{
 }
 sub initialize_01{
     my ($self, $para_list)=@_;
-    return 'AA'.'01'.'00'.'06'.'07'.'07';
+    return 'AA'.'01'.'00'.$self->configuration->{color_type}
+                     .$self->configuration->{preview_resolution}
+                     .$self->configuration->{jpeg_resolution};
 }
 sub snapshot_05{
     my ($self, $para_list)=@_;
-    return 'AA'.'05'.'01'.'00'.'00'.'00';
+    return 'AA'.'05'.$self->configuration->{picture_type}
+                     .'00'.'00'.'00';
 }
 sub set_package_size_06{
     my ($self, $para_list)=@_;
-    return 'AA'.'06'.'08'.'00'.'02'.'00';
+    return 'AA'.'06'.'08'
+               .sprintf("%02x", $_%256).sprintf("%02x", $_/256)
+               .'00';
 }
 sub get_picture_04{
     my ($self, $para_list)=@_;
