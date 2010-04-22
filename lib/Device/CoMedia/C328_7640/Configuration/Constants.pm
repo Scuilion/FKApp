@@ -5,8 +5,10 @@ BEGIN {
                   RESET POWER_OFF DATA SYNC ACK NAK LIGHT_FREQUENCE
                   CT_2_B_GRAY CT_4_B_GRAY CT_8_B_GRAY CT_12_B_COLOR CT_16_B_COLOR CT_JPEG
                   SMALL MEDIUM LARGE EX_LARGE
-                  SNAPSHOT2 PREVIEW JPEG
-                  COMPRESSED UNCOMPRESSED}]
+                  SNAPSHOT_PIC PREVIEW_PIC JPEG_PIC
+                  COMPRESSED UNCOMPRESSED
+                  BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 BAUD_115200
+                  }]
 }
 use Sub::Exporter -setup =>{
     exports => $constants,
@@ -41,12 +43,20 @@ use constant {
     LARGE               =>'05',         #320x240
     EX_LARGE            =>'07',         #640x480
     
-    SNAPSHOT2            =>'01',
-    PREVIEW             =>'02',
-    JPEG                =>'05',
+    SNAPSHOT_PIC        =>'01',
+    PREVIEW_PIC         =>'02',
+    JPEG_PIC            =>'05',
     
     COMPRESSED          =>'00',
     UNCOMPRESSED        =>'01',
+    BAUD_7200           =>7200,
+    BAUD_9600           =>9600,
+    BAUD_14400          =>14400,
+    BAUD_19200          =>19200,
+    BAUD_28800          =>28800,
+    BAUD_38400          =>38400,
+    BAUD_57600          =>57600,
+    BAUD_115200         =>115200,
 };
 
-1
+1;
