@@ -15,8 +15,8 @@ has 'configuration' => (
       default   => sub  {{color_type           => "07",
                         preview_resolution    => "07",
                         jpeg_resolution       => "07",
-                        picture_type          => "00",
-                        snapshot_type         => "05",
+                        picture_type          => "01",
+                        snapshot_type         => "00",
                         package_size          => "512",
                         baudrate              => "115200", } },
       handles   => {
@@ -65,18 +65,21 @@ sub initialize_01{
 }
 sub snapshot_05{
     my ($self, $para_list)=@_;
-    return 'AA'.'05'.$self->configuration->{picture_type}
+    return 'AA'.'05'.$self->configuration->{snapshot_type}
                      .'00'.'00'.'00';
 }
 sub set_package_size_06{
     my ($self, $para_list)=@_;
     return 'AA'.'06'.'08'
-               .sprintf("%02x", $_%256).sprintf("%02x", $_/256)
+               .sprintf("%02x", $self->configuration->{package_size}%256)
+               .sprintf("%02x", $self->configuration->{package_size}/256)
                .'00';
 }
 sub get_picture_04{
     my ($self, $para_list)=@_;
-    return 'AA'.'04'.'01'.'00'.'00'.'00';
+    return 'AA'.'04'
+                  .$self->configuration->{picture_type}
+                  .'00'.'00'.'00';
 }
 sub sync_0D{
     my ($self, $para_list)=@_;

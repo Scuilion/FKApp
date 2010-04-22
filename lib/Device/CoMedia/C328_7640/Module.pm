@@ -32,6 +32,12 @@ has commands => (
     required=>1,
     lazy=>1,
     );
+has file_location =>(
+   is => 'rw',
+   isa => 'Str',
+   default =>  'C:\Documents and Settings\kevino\Desktop\dump\\',
+);
+
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
@@ -96,7 +102,7 @@ sub sync_cam{
            
             return 1;
         }
-        usleep(50000);
+        usleep(5000);
     }
     return 0;
 }
@@ -104,8 +110,21 @@ sub sync_cam{
 
 sub take_picture{
     my $self=shift;
+    my $file_name= shift;
+    my $loc_name = $self->file_location;
+    my $dt=DateTime->now;
+
+    if(!defined $file_name ){
+          $loc_name .= $dt->strftime('%Y%m%d%H%M%S');
+          Dwarn $file_name;
+    }
+    else{
+          $loc_name .= $file_name;
+          Dwarn 'in here';
+    }
+    Dwarn $loc_name;
     my $command;
-    
+
     $command=$self->commands->send_command({ID=>INITIAL()});
     Dwarn 'Initialize: ' . $command;
     $self->comm_object->w_output($command);
@@ -158,9 +177,7 @@ sub take_picture{
         }
         return 0 if($i==10);
     }
-    my $dt=DateTime->now;
-    open (my $file, '>>', 'C:\Documents and Settings\kevino\Desktop\dump\\'.
-          $dt->strftime('%Y%m%d%H%M%S'));
+    open (my $file, '>>',$loc_name);
     binmode $file;
 
     for my $ack_counter(0..$image_size+1){
