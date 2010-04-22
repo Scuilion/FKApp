@@ -32,17 +32,47 @@ has commands => (
     required=>1,
     lazy=>1,
     );
-    
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
 sub _build_command_list{ Device::CoMedia::C328_7640::Commands->new() }
 
 sub change_color_type{
-    my ($self, $config) = @_;
-    $self->comm_object->set_option($config);
+    my ($self, $ct) = @_;
+    $self->commands->set_option(color_type=>$ct);
 }
 
+sub change_preview_res{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(preview_resolution=>$ct);
+}
+sub change_jpeg_res{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(jpeg_resolution=>$ct);
+}
+sub change_picture_type{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(picture_type=>$ct);
+}
+sub change_snapshot_type{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(snapshot_type=>$ct);
+}
+sub set_package_size{
+    my ($self, $ct) = @_;
+    Dwarn $ct;
+    if($ct >= 64 && $ct <=512){
+    Dwarn 'got here';
+      $self->commands->set_option(package_size=>$ct);
+    }
+    else{
+      return 0; #set up error handeling here
+    }
+}
+sub set_baudrate{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(baudrate=>$ct);
+}
 
 sub sync_cam{
     my $self=shift;
@@ -77,7 +107,7 @@ sub take_picture{
     my $command;
     
     $command=$self->commands->send_command({ID=>INITIAL()});
-    Dwarn 'write ' . $command;
+    Dwarn 'Initialize: ' . $command;
     $self->comm_object->w_output($command);
     my ($ack, $counter, $image_size, $image);
     for my $i (0..10){
@@ -89,7 +119,7 @@ sub take_picture{
     }
     $ack='';
     $command=$self->commands->send_command({ID=>SET_PACKAGE_SIZE()});
-    Dwarn 'write ' . $command;
+    Dwarn 'set package size: ' . $command;
     $self->comm_object->w_output($command);
     for my $i (0..10){
         usleep(50000);
@@ -100,7 +130,7 @@ sub take_picture{
     }
     $ack='';
     $command=$self->commands->send_command({ID=>SNAPSHOT()});
-    Dwarn 'write ' . $command;
+    Dwarn 'Take Snapshot: ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){
         usleep(50000);
@@ -112,7 +142,7 @@ sub take_picture{
     
     $ack="";
     $command=$self->commands->send_command({ID=>GET_PICTURE()});
-    Dwarn 'write ' . $command;
+    Dwarn 'Get picture: ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){
         usleep(50000);

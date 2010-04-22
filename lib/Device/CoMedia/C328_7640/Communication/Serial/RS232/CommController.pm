@@ -29,29 +29,7 @@ has config_file => (
     lazy=>1,
 );
 
-has 'configuration' => (
-      traits    => ['Hash'],
-      is        => 'rw',
-      isa       => 'HashRef[Str]',
-      default   => sub  {{color_type           => "07",
-                        preview_resolution    => "07",
-                        jpeg_resolution       => "07",
-                        picture_type          => "01",
-                        snapshot_type         => "05",
-                        package_size          => "512",
-                        baudrate              => "115200", } },
-      handles   => {
-          set_option     => 'set',
-          get_option     => 'get',
-          has_no_options => 'is_empty',
-          num_options    => 'count',
-          delete_option  => 'delete',
-          pairs          => 'kv',
-      },
-
-  );
-
-
+#
 sub bytes_length { #counts the string in terms of bytes as opposed to chars
     use bytes;
     my $leng = bytes::length(shift @_);
