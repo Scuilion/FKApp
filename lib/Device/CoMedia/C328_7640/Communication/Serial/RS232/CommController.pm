@@ -24,7 +24,7 @@ has comm_port => (
 has config_file => (
     is => 'rw',
     isa => 'Str',
-    default => "FindBin::Bin/../CommConfig",
+    default => "CommConfig",
     required => 1,
     lazy=>1,
 );
@@ -76,7 +76,6 @@ sub comm_read() {
     #packed hex unit are the native type for transmission from the comm port
     # ex. byte '5a' is Z, '0a' is \n etc.
     (my $count_in, my $string_in) = $self->com_handle->read(4028);
-    #return pack('H'.$self->bytes_length($string_in), $string_in);
     $string_in = $self->format_for_print($string_in);
     return $string_in;
 }

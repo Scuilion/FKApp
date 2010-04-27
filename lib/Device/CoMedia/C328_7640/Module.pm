@@ -35,7 +35,7 @@ has commands => (
 has file_location =>(
    is => 'rw',
    isa => 'Str',
-   default =>  'C:\Documents and Settings\kevino\Desktop\dump\\',
+   default =>  'C:\dump\\',
 );
 
 sub _build_C328_controller{
@@ -116,11 +116,11 @@ sub take_picture{
 
     if(!defined $file_name ){
           $loc_name .= $dt->strftime('%Y%m%d%H%M%S');
-          Dwarn $file_name;
+          Dwarn "file is not defined" . $file_name;
     }
     else{
           $loc_name .= $file_name;
-          Dwarn 'in here';
+          Dwarn 'in here'. $loc_name;
     }
     Dwarn $loc_name;
     my $command;
