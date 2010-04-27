@@ -23,7 +23,6 @@ my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 #$cam_interface->soft_rest();
 
 if($cam_interface->sync_cam()){
-    #sleep(3);
     if($cam_interface->take_picture()){
         Dwarn 'got a picture';
     }
@@ -34,7 +33,7 @@ if($cam_interface->sync_cam()){
 else{
     Dwarn 'no sync';
 }
-
+#test
 1;
 
 
