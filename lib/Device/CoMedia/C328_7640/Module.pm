@@ -47,7 +47,6 @@ sub change_color_type{
     my ($self, $ct) = @_;
     $self->commands->set_option(color_type=>$ct);
 }
-
 sub change_preview_res{
     my ($self, $ct) = @_;
     $self->commands->set_option(preview_resolution=>$ct);
