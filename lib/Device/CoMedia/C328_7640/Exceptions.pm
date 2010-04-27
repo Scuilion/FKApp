@@ -1,22 +1,14 @@
-package CoMedia::C328::Exceptions;
+package Device::CoMedia::C328_7640::Exceptions;
 
 use strict;
 use warnings;
 
 use Exception::Class
       ( 
-        'Configuration::Exceptions::NoFileFound'=>{
+        'Device::CoMedia::C328_7640::Exceptions::GenericCommError'=>{
             fields => ['response'],
         },
-        'Configuration::Exceptions::SeverNameNotFound'=>{
-            fields => ['response'],
-        },
-        'Configuration::Exceptions::CompNameNotFound'=>{
-            fields => ['response'],
-        },
-        'Configuration::Exceptions::COMMNameNotFound'=>{
-            fields => ['response'],
-        },
+
         #'AnotherException' =>
         #{ isa => 'MyException' },
         #
@@ -33,11 +25,7 @@ use Exception::Class
       
 use Moose::Util::TypeConstraints;
 
-class_type 'Configuration::Exceptions::NoFileFound';
-class_type 'Configuration::Exceptions::SeverNameNotFound';
-class_type 'Configuration::Exceptions::CompNameNotFound';
-class_type 'Configuration::Exceptions::COMMNameNotFound';
-
+class_type 'Device::CoMedia::C328_7640::Exceptions::GenericCommError';
 
 no Moose::Util::TypeConstraints;
 1;

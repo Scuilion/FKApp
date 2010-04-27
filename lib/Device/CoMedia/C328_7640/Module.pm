@@ -96,12 +96,12 @@ sub sync_cam{
                     Parameter4=>$id_b2,
                     
                     });
-        Dwarn 'response ' . $temp;
+#        Dwarn 'response ' . $temp;
         $self->comm_object->w_output($temp);
            
             return 1;
         }
-        usleep(5000);
+        usleep(6000);
     }
     return 0;
 }
@@ -115,11 +115,9 @@ sub take_picture{
 
     if(!defined $file_name ){
           $loc_name .= $dt->strftime('%Y%m%d%H%M%S');
-          Dwarn "file is not defined" . $file_name;
     }
     else{
           $loc_name .= $file_name;
-          Dwarn 'in here'. $loc_name;
     }
     Dwarn $loc_name;
     my $command;
@@ -129,7 +127,7 @@ sub take_picture{
     $self->comm_object->w_output($command);
     my ($ack, $counter, $image_size, $image);
     for my $i (0..10){
-        usleep(50000);
+        usleep(60000);
         $ack .= $self->comm_object->comm_read();
         Dwarn 'rec 1: ' . $ack;
         last if( $ack=~/......(..)..../);
@@ -140,7 +138,7 @@ sub take_picture{
     Dwarn 'set package size: ' . $command;
     $self->comm_object->w_output($command);
     for my $i (0..10){
-        usleep(50000);
+        usleep(60000);
         $ack .= $self->comm_object->comm_read();
         Dwarn 'rec 2: ' . $ack;
         last if( $ack=~/......(..)..../);
@@ -151,7 +149,7 @@ sub take_picture{
     Dwarn 'Take Snapshot: ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){
-        usleep(50000);
+        usleep(60000);
         $ack .= $self->comm_object->comm_read();
         Dwarn 'rec 3: ' . $ack;
         last if( $ack=~/......(..)..../);
@@ -163,7 +161,7 @@ sub take_picture{
     Dwarn 'Get picture: ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){
-        usleep(50000);
+        usleep(60000);
         $ack .= $self->comm_object->comm_read();
         if(($counter , my $i0, my $i1, my $i2, $image)
            =  $ack=~/......(..)..........(..)(..)(..)(.*)/){
@@ -188,7 +186,7 @@ sub take_picture{
                                             });
         #Dwarn 'ack ' . $command;
         $self->comm_object->w_output($command);
-        usleep(50000);
+        usleep(60000);
         my $image_data = $self->comm_object->comm_read();
         $image_data = substr($image_data, 8, -4);
         #Dwarn $image_data;
@@ -201,24 +199,12 @@ sub take_picture{
     Dwarn 'write ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){
-        usleep(50000);
+        usleep(60000);
         $ack .= $self->comm_object->comm_read();
         Dwarn 'rec 5: ' . $ack;
         last if( $ack=~/......(..)..../);
         return 0 if($i==10);
     }
-    
-    ####$ack="";
-    ####for(0..200){
-    ####    usleep(50000);
-    ####    $image .= $self->comm_object->comm_read();
-    ####    #Dwarn $self->comm_object->comm_read();
-    ####    
-    ####    last if(length($image)>=72000);
-    ####}
-    ####Dwarn length($image);
-    #####Dwarn $image;
-    
     
     my $temp =$self->commands->send_command({ID=>ACK(),
                     Parameter1=>'0e',
