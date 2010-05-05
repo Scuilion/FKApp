@@ -3,3 +3,4 @@ CommConfig
 *.sp
 koi8
 hashObject.pm
+cover_db/*

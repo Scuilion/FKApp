@@ -43,40 +43,50 @@ sub _build_C328_controller{
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
 sub _build_command_list{ Device::CoMedia::C328_7640::Commands->new() }
 
-sub change_color_type{
-    my ($self, $ct) = @_;
-    $self->commands->set_option(color_type=>$ct);
-}
 sub change_preview_res{
     my ($self, $ct) = @_;
     $self->commands->set_option(preview_resolution=>$ct);
 }
+
+sub change_color_type{
+    my ($self, $ct) = @_;
+    $self->commands->set_option(color_type=>$ct);
+}
+
 sub change_jpeg_res{
     my ($self, $ct) = @_;
     $self->commands->set_option(jpeg_resolution=>$ct);
 }
+
 sub change_picture_type{
     my ($self, $ct) = @_;
     $self->commands->set_option(picture_type=>$ct);
 }
+
 sub change_snapshot_type{
     my ($self, $ct) = @_;
     $self->commands->set_option(snapshot_type=>$ct);
 }
+
 sub set_package_size{
     my ($self, $ct) = @_;
-    Dwarn $ct;
     if($ct >= 64 && $ct <=512){
-    Dwarn 'got here';
       $self->commands->set_option(package_size=>$ct);
     }
     else{
-      return 0; #set up error handeling here
+      die 'size not acceptable';
     }
 }
+#BAUD_7200(), )
 sub set_baudrate{
     my ($self, $ct) = @_;
-    $self->commands->set_option(baudrate=>$ct);
+
+    if( $ct ~~ [BAUD_7200(), BAUD_9600(), BAUD_14400(), BAUD_19200(), BAUD_28800(), BAUD_38400(), BAUD_57600(), BAUD_115200()] ){
+        $self->commands->set_option(baudrate=>$ct);
+    }
+    else{
+      die 'baudrate not valid';
+    }
 }
 
 sub sync_cam{

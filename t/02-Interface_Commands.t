@@ -11,7 +11,7 @@ use Storable qw(dclone);
 use Device::CoMedia::C328_7640::Module;
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
-my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
+my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM1');
 
 my ($config_array_expected, $config_array_got, $test_names) = create_arrays();
 
@@ -19,6 +19,8 @@ for( my $i=0; $i< scalar @$config_array_got ; $i++){
    is_deeply($config_array_got->[$i], $config_array_expected->[$i], @$test_names[$i]); 
 }
 plan tests=>scalar @$config_array_got;
+
+
 done_testing();
 
 sub create_arrays{
@@ -132,7 +134,64 @@ sub create_arrays{
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'change sanpshot type, uncompressed');
 
-   return ($config_array_expected, $config_array_got, $test_names);
+   #set package size
+   $cam_interface->set_package_size('226');
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{package_size} = '226';
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing the package size, 226');
+
+   #set baudrate
+   $cam_interface->set_baudrate(BAUD_7200);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 7200;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 7200');
+
+   $cam_interface->set_baudrate(BAUD_9600);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 9600;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 9600');
+   
+   $cam_interface->set_baudrate(BAUD_14400);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 14400;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 14000');
+   
+   $cam_interface->set_baudrate(BAUD_19200);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 19200;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 19200');
+   
+   $cam_interface->set_baudrate(BAUD_28800);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 28800;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 28800');
+   
+   $cam_interface->set_baudrate(BAUD_38400);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 38400;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 38400');
+   
+   $cam_interface->set_baudrate(BAUD_57600);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 57600;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 57600');
+   
+   $cam_interface->set_baudrate(BAUD_115200);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{baudrate} = 115200;
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'changing baud rate, 115200');
+   
+ return ($config_array_expected, $config_array_got, $test_names);
+  
 }
 
 

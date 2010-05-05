@@ -32,13 +32,14 @@ has config_file => (
     lazy=>1,
 );
 
-#
+
 sub bytes_length { #counts the string in terms of bytes as opposed to chars
     use bytes;
     my $leng = bytes::length(shift @_);
     no bytes;
     return $leng;
 }
+
 sub _build_com_handle {
     my $self = shift;
     try{
@@ -72,6 +73,7 @@ sub w_output{
     $string =pack( 'H*' , $string);
     $self->com_handle->write($string);
 }
+
 sub check_handle {
     my $self = shift;
    if (defined $self->com_handle) {
