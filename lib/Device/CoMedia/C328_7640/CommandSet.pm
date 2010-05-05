@@ -1,4 +1,5 @@
-package Device::CoMedia::C328_7640::Commands;
+#Generates the commands as defined by the COMedia datasheet
+package Device::CoMedia::C328_7640::CommandSet;
 
 use feature ':5.10';
 
@@ -46,6 +47,9 @@ my $command_dispatch_table= {
     LIGHT_FREQUENCE()   => \&light_frequency_13,
 };
 
+sub read_cmd_dispatch_tbl{
+}
+
 sub send_command{
     my ($self, $parameter_list)=@_;
     
@@ -58,17 +62,20 @@ sub send_command{
         return undef;
     }
 }
+
 sub initialize_01{
     my ($self, $para_list)=@_;
     return 'AA'.'01'.'00'.$self->configuration->{color_type}
                      .$self->configuration->{preview_resolution}
                      .$self->configuration->{jpeg_resolution};
 }
+
 sub snapshot_05{
     my ($self, $para_list)=@_;
     return 'AA'.'05'.$self->configuration->{snapshot_type}
                      .'00'.'00'.'00';
 }
+
 sub set_package_size_06{
     my ($self, $para_list)=@_;
     return 'AA'.'06'.'08'
@@ -76,16 +83,19 @@ sub set_package_size_06{
                .sprintf("%02x", $self->configuration->{package_size}/256)
                .'00';
 }
+
 sub get_picture_04{
     my ($self, $para_list)=@_;
     return 'AA'.'04'
                   .$self->configuration->{picture_type}
                   .'00'.'00'.'00';
 }
+
 sub sync_0D{
     my ($self, $para_list)=@_;
     return 'AA'.'0D'.'00'.'00'.'00'.'00';
 }
+
 sub ack_0E{
     my ($self, $para_list)=@_;
     Dwarn $para_list;

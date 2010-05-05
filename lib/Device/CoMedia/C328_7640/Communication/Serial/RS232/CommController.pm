@@ -32,6 +32,10 @@ has config_file => (
     lazy=>1,
 );
 
+has last_snd_buffer => (
+   is => 'rw',
+   isa => 'Str',
+);
 
 sub bytes_length { #counts the string in terms of bytes as opposed to chars
     use bytes;

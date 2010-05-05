@@ -9,7 +9,7 @@ use Time::HiRes qw(usleep);
 use POSIX qw(ceil);
 
 use Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController;
-use Device::CoMedia::C328_7640::Commands;
+use Device::CoMedia::C328_7640::CommandSet;
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
 has comm_object => (
@@ -27,7 +27,7 @@ has comm_port => (
 
 has commands => (
     is => 'ro',
-    isa => 'Device::CoMedia::C328_7640::Commands',
+    isa => 'Device::CoMedia::C328_7640::CommandSet',
     builder => '_build_command_list',
     required=>1,
     lazy=>1,
@@ -41,7 +41,7 @@ has file_location =>(
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
-sub _build_command_list{ Device::CoMedia::C328_7640::Commands->new() }
+sub _build_command_list{ Device::CoMedia::C328_7640::CommandSet->new() }
 
 sub change_preview_res{
     my ($self, $ct) = @_;
@@ -77,7 +77,7 @@ sub set_package_size{
       die 'size not acceptable';
     }
 }
-#BAUD_7200(), )
+
 sub set_baudrate{
     my ($self, $ct) = @_;
 
@@ -93,6 +93,7 @@ sub change_light_freq{
    my ($self, $ct) = @_;
    $self->commands->set_option(freq_value=>$ct);
 }
+
 sub sync_cam{
     my $self=shift;
     my $ack;
