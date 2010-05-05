@@ -33,7 +33,6 @@ sub make_commands{
                            .$cmd_obj->configuration->{preview_resolution}
                            .$cmd_obj->configuration->{jpeg_resolution});
    push( @test_name, "01 command");
-   return (\@got_cmds, \@exp_cmds, \@test_name);
 
    #get picture command 04
    push( @got_cmds , $cmd_obj->send_command( {ID=>GET_PICTURE()}));   
@@ -79,5 +78,6 @@ sub make_commands{
    
    
    #set light frequency command 13
+   return (\@got_cmds, \@exp_cmds, \@test_name);
 }
 1;
