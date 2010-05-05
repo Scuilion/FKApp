@@ -190,6 +190,19 @@ sub create_arrays{
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 115200');
    
+   #change light frequency 
+   $cam_interface->change_light_freq(FREQ_50);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{freq_value} = '00';
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'change light freq, 50 hz');
+
+   $cam_interface->change_light_freq(FREQ_60);
+   push( @$config_array_got, dclone($cam_interface->commands->configuration()));
+   $current_config->{freq_value} = '01';
+   push(@$config_array_expected, dclone($current_config));
+   push(@$test_names, 'change light freq, 60 hz');
+
  return ($config_array_expected, $config_array_got, $test_names);
   
 }

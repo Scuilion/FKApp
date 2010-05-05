@@ -8,6 +8,7 @@ BEGIN {
                   SNAPSHOT_PIC PREVIEW_PIC JPEG_PIC
                   COMPRESSED UNCOMPRESSED
                   BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 BAUD_115200
+                  FREQ_50 FREQ_60
                   }]
 }
 use Sub::Exporter -setup =>{
@@ -57,6 +58,9 @@ use constant {
     BAUD_38400          =>38400,
     BAUD_57600          =>57600,
     BAUD_115200         =>115200,
+
+    FREQ_50             =>'00',
+    FREQ_60             =>'01'
 };
 
 1;

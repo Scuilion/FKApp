@@ -89,33 +89,49 @@ sub set_baudrate{
     }
 }
 
+sub change_light_freq{
+   my ($self, $ct) = @_;
+   $self->commands->set_option(freq_value=>$ct);
+}
 sub sync_cam{
     my $self=shift;
     my $ack;
     for(0..33){# 25 times as defined by user manual
         $self->comm_object->w_output($self->commands->send_command({ID=>SYNC()}));
         $ack .= $self->comm_object->comm_read();
+
         my ($counter, $id_b2, $id_b1, $cmd);
         if( ($cmd , $counter, $id_b1, $id_b2) =
            $ack =~ /....(..)(..)(..)(..)............/){
         
-        my $temp =$self->commands->send_command({ID=>ACK(),
-                    Parameter1=>$cmd,
-                    Parameter2=>$counter,
-                    Parameter3=>$id_b1,
-                    Parameter4=>$id_b2,
-                    
-                    });
-#        Dwarn 'response ' . $temp;
-        $self->comm_object->w_output($temp);
+           my $temp =$self->commands->send_command({ID=>ACK(),Parameter1=>$cmd,Parameter2=>$counter,Parameter3=>$id_b1,Parameter4=>$id_b2,});
+           $self->comm_object->w_output($temp);
            
-            return 1;
+           return 1;
         }
         usleep(6000);
     }
     return 0;
 }
 
+sub generic_snd_packet{
+   my $self=shift;
+   my $action = shift;
+   my $tries = shift;
+
+   my $command=$self->commands->send_command({ID=>$action });
+   Dwarn ' doing initial';
+   $self->comm_object->w_output($command);
+
+    my ($ack, $counter, $image_size, $image);
+    for my $i (0..10){
+        usleep(60000);
+        $ack .= $self->comm_object->comm_read();
+        #Dwarn 'rec 1: ' . $ack;
+        last if( $ack=~/......(..)..../);
+        return 0 if($i==10);
+    }
+}
 
 sub take_picture{
     my $self=shift;
@@ -123,51 +139,21 @@ sub take_picture{
     my $loc_name = $self->file_location;
     my $dt=DateTime->now;
 
-    if(!defined $file_name ){
-          $loc_name .= $dt->strftime('%Y%m%d%H%M%S');
-    }
-    else{
-          $loc_name .= $file_name;
-    }
-    Dwarn $loc_name;
-    my $command;
+    #check and/or set file name
+    if(!defined $file_name ){$loc_name .= $dt->strftime('%Y%m%d%H%M%S.jpg');}
+    else{$loc_name .= $file_name; }
 
-    $command=$self->commands->send_command({ID=>INITIAL()});
-    Dwarn 'Initialize: ' . $command;
-    $self->comm_object->w_output($command);
-    my ($ack, $counter, $image_size, $image);
-    for my $i (0..10){
-        usleep(60000);
-        $ack .= $self->comm_object->comm_read();
-        Dwarn 'rec 1: ' . $ack;
-        last if( $ack=~/......(..)..../);
-        return 0 if($i==10);
-    }
-    $ack='';
-    $command=$self->commands->send_command({ID=>SET_PACKAGE_SIZE()});
-    Dwarn 'set package size: ' . $command;
-    $self->comm_object->w_output($command);
-    for my $i (0..10){
-        usleep(60000);
-        $ack .= $self->comm_object->comm_read();
-        Dwarn 'rec 2: ' . $ack;
-        last if( $ack=~/......(..)..../);
-        return 0 if($i==10);
-    }
-    $ack='';
-    $command=$self->commands->send_command({ID=>SNAPSHOT()});
-    Dwarn 'Take Snapshot: ' . $command;
-    $self->comm_object->w_output($command);
-    for my $i(0..10){
-        usleep(60000);
-        $ack .= $self->comm_object->comm_read();
-        Dwarn 'rec 3: ' . $ack;
-        last if( $ack=~/......(..)..../);
-        return 0 if($i==10);
-    }
-    
+    $self->generic_snd_packet(INITIAL());
+
+    $self->generic_snd_packet(SET_PACKAGE_SIZE());
+
+    my $ack='';
+    my ($counter, $image, $image_size);
+
+    $self->generic_snd_packet(SNAPSHOT());
+
     $ack="";
-    $command=$self->commands->send_command({ID=>GET_PICTURE()});
+    my $command=$self->commands->send_command({ID=>GET_PICTURE()});
     Dwarn 'Get picture: ' . $command;
     $self->comm_object->w_output($command);
     for my $i(0..10){

@@ -18,7 +18,8 @@ has 'configuration' => (
                         picture_type          => "01",
                         snapshot_type         => "00",
                         package_size          => 512,
-                        baudrate              => 115200, } },
+                        baudrate              => 115200,
+                        freq_value            => "00" , } },
       handles   => {
           set_option     => 'set',
           get_option     => 'get',
@@ -87,7 +88,7 @@ sub sync_0D{
 }
 sub ack_0E{
     my ($self, $para_list)=@_;
-#    Dwarn $para_list;
+    Dwarn $para_list;
     return 'AA'.'0E'.$para_list->{Parameter1}.$para_list->{Parameter2}
                     .$para_list->{Parameter3}.$para_list->{Parameter4};
 }
