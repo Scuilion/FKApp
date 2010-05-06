@@ -22,7 +22,7 @@ ok($cam_interface->set_baudrate(BAUD_28800), 'check baudrate, 28800');
 ok($cam_interface->set_baudrate(BAUD_38400), 'check baudrate, 38400');
 ok($cam_interface->set_baudrate(BAUD_57600), 'check baudrate, 57600');
 ok($cam_interface->set_baudrate(BAUD_115200), 'check baudrate, 115200');
-dies_ok{ $cam_interface->set_baudrate(12345)} 'check bad baudrate' ;
+dies_ok{ $cam_interface->set_baudrate('12345')} 'check bad baudrate' ;
 
 #check fencepost errors for set_package_size
 dies_ok{$cam_interface->set_package_size(45)} 'check lower out of bounds';

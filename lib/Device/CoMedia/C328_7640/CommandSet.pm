@@ -117,7 +117,7 @@ sub sync_0D{
 
 sub ack_0E{
     my ($self, $para_list)=@_;
-    Dwarn $para_list;
+#    Dwarn $para_list;
     return 'AA'.'0E'.$para_list->{Parameter1}.$para_list->{Parameter2}
                     .$para_list->{Parameter3}.$para_list->{Parameter4};
 }

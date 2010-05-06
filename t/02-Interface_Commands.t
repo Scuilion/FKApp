@@ -144,49 +144,49 @@ sub create_arrays{
    #set baudrate
    $cam_interface->set_baudrate(BAUD_7200);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 7200;
+   $current_config->{baudrate} = 'ff01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 7200');
 
    $cam_interface->set_baudrate(BAUD_9600);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 9600;
+   $current_config->{baudrate} = 'bf01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 9600');
    
    $cam_interface->set_baudrate(BAUD_14400);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 14400;
+   $current_config->{baudrate} = '7f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 14000');
    
    $cam_interface->set_baudrate(BAUD_19200);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 19200;
+   $current_config->{baudrate} = '5f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 19200');
    
    $cam_interface->set_baudrate(BAUD_28800);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 28800;
+   $current_config->{baudrate} = '3f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 28800');
    
    $cam_interface->set_baudrate(BAUD_38400);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 38400;
+   $current_config->{baudrate} = '2f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 38400');
    
    $cam_interface->set_baudrate(BAUD_57600);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 57600;
+   $current_config->{baudrate} = '1f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 57600');
    
    $cam_interface->set_baudrate(BAUD_115200);
    push( @$config_array_got, dclone($cam_interface->commands->configuration()));
-   $current_config->{baudrate} = 115200;
+   $current_config->{baudrate} = '0f01';
    push(@$config_array_expected, dclone($current_config));
    push(@$test_names, 'changing baud rate, 115200');
    

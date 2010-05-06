@@ -121,12 +121,11 @@ sub generic_snd_packet{
    my $tries = shift;
 
    my $command=$self->commands->send_command({ID=>$action });
-   Dwarn ' doing initial';
    $self->comm_object->w_output($command);
 
     my ($ack, $counter, $image_size, $image);
     for my $i (0..10){
-        usleep(60000);
+        usleep(70000);
         $ack .= $self->comm_object->comm_read();
         #Dwarn 'rec 1: ' . $ack;
         last if( $ack=~/......(..)..../);
@@ -145,14 +144,14 @@ sub take_picture{
     else{$loc_name .= $file_name; }
 
     $self->generic_snd_packet(INITIAL());
-
+Dwarn 'initial';
     $self->generic_snd_packet(SET_PACKAGE_SIZE());
-
+Dwarn 'set package size';
     my $ack='';
     my ($counter, $image, $image_size);
 
     $self->generic_snd_packet(SNAPSHOT());
-
+#Dwarn 'set snapshot type';
     $ack="";
     my $command=$self->commands->send_command({ID=>GET_PICTURE()});
     Dwarn 'Get picture: ' . $command;
@@ -183,13 +182,12 @@ sub take_picture{
                                             });
         #Dwarn 'ack ' . $command;
         $self->comm_object->w_output($command);
-        usleep(60000);
+        usleep(90000);
         my $image_data = $self->comm_object->comm_read();
-        $image_data = substr($image_data, 8, -4);
-        #Dwarn $image_data;
-        print {$file} join '', map{ chr hex $_} grep($_ ne "", split /(..)/ , $image_data);
-        
-        #Dwarn $ack;                         
+        if( $image_data ne ''){
+           $image_data = substr($image_data, 8, -4);
+           print {$file} join '', map{ chr hex $_} grep($_ ne "", split /(..)/ , $image_data);
+        }
     }                                        
     close ($file);
     
