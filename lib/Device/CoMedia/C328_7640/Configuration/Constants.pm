@@ -9,6 +9,7 @@ BEGIN {
                   COMPRESSED UNCOMPRESSED
                   BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 BAUD_115200
                   FREQ_50 FREQ_60
+                  R_SYSTEM R_STATE
                   }]
 }
 use Sub::Exporter -setup =>{
@@ -50,17 +51,20 @@ use constant {
     
     COMPRESSED          =>'00',
     UNCOMPRESSED        =>'01',
-    BAUD_7200           =>7200,
-    BAUD_9600           =>9600,
-    BAUD_14400          =>14400,
-    BAUD_19200          =>19200,
-    BAUD_28800          =>28800,
-    BAUD_38400          =>38400,
-    BAUD_57600          =>57600,
-    BAUD_115200         =>115200,
+    BAUD_7200           =>"ff01",
+    BAUD_9600           =>"bf01",
+    BAUD_14400          =>"7f01",
+    BAUD_19200          =>"5f01",
+    BAUD_28800          =>"3f01",
+    BAUD_38400          =>"2f01",
+    BAUD_57600          =>"1f01",
+    BAUD_115200         =>"0f01",
 
     FREQ_50             =>'00',
-    FREQ_60             =>'01'
+    FREQ_60             =>'01',
+
+    R_SYSTEM            =>'00',
+    R_STATE             =>'01'
 };
 
 1;

@@ -13,14 +13,15 @@ has 'configuration' => (
       traits    => ['Hash'],
       is        => 'rw',
       isa       => 'HashRef[Str]',
-      default   => sub  {{color_type           => "07",
-                        preview_resolution    => "07",
-                        jpeg_resolution       => "07",
-                        picture_type          => "01",
-                        snapshot_type         => "00",
+      default   => sub  {{color_type           =>CT_JPEG(), 
+                        preview_resolution    => EX_LARGE(),
+                        jpeg_resolution       => EX_LARGE(),
+                        picture_type          => SNAPSHOT_PIC(),
+                        snapshot_type         => COMPRESSED(),
                         package_size          => 512,
-                        baudrate              => 115200,
-                        freq_value            => "00" , } },
+                        baudrate              => BAUD_115200(),
+                        freq_value            => FREQ_50() ,
+                        reset_type            => R_SYSTEM() } },
       handles   => {
           set_option     => 'set',
           get_option     => 'get',
@@ -40,15 +41,10 @@ my $command_dispatch_table= {
     SET_BAUDRATE()      => \&set_baudrate_07,
     RESET()             => \&reset_module_08,
     POWER_OFF()         => \&power_off_09,
-    DATA()              => \&data_0A,
     SYNC()              => \&sync_0D,
     ACK()               => \&ack_0E,
-    NAK()               => \&nak_0F,
     LIGHT_FREQUENCE()   => \&light_frequency_13,
 };
-
-sub read_cmd_dispatch_tbl{
-}
 
 sub send_command{
     my ($self, $parameter_list)=@_;
@@ -70,6 +66,13 @@ sub initialize_01{
                      .$self->configuration->{jpeg_resolution};
 }
 
+sub get_picture_04{
+    my ($self, $para_list)=@_;
+    return 'AA'.'04'
+                  .$self->configuration->{picture_type}
+                  .'00'.'00'.'00';
+}
+
 sub snapshot_05{
     my ($self, $para_list)=@_;
     return 'AA'.'05'.$self->configuration->{snapshot_type}
@@ -79,16 +82,32 @@ sub snapshot_05{
 sub set_package_size_06{
     my ($self, $para_list)=@_;
     return 'AA'.'06'.'08'
-               .sprintf("%02x", $self->configuration->{package_size}%256)
-               .sprintf("%02x", $self->configuration->{package_size}/256)
+               .$self->low_byte()
+               .$self->high_byte()
                .'00';
 }
 
-sub get_picture_04{
-    my ($self, $para_list)=@_;
-    return 'AA'.'04'
-                  .$self->configuration->{picture_type}
-                  .'00'.'00'.'00';
+sub high_byte{
+   my $self = shift;
+   return sprintf("%02x", $self->configuration->{package_size}/256);
+}
+
+sub low_byte{
+   my $self = shift;
+   return sprintf("%02x", $self->configuration->{package_size}%256);
+}
+
+sub set_baudrate_07{
+   my $self = shift;
+   return 'AA07' . $self->configuration->{baudrate}."0000";              
+}
+
+sub reset_module_08{
+   my $self = shift;
+   return 'AA08' . $self->configuration->{reset_type}."000000";              
+}
+sub power_off_09{
+   return 'AA0900000000';
 }
 
 sub sync_0D{
@@ -101,6 +120,11 @@ sub ack_0E{
     Dwarn $para_list;
     return 'AA'.'0E'.$para_list->{Parameter1}.$para_list->{Parameter2}
                     .$para_list->{Parameter3}.$para_list->{Parameter4};
+}
+
+sub light_frequency_13{
+   my $self= shift;
+   return 'AA13'.$self->configuration->{freq_value}.'000000';
 }
 
 no Moose;
