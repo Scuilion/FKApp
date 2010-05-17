@@ -11,6 +11,7 @@ use POSIX qw(ceil);
 use Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController;
 use Device::CoMedia::C328_7640::CommandSet;
 use Device::CoMedia::C328_7640::Configuration::Constants;
+use Device::CoMedia::C328_7640::CommandProtocol;
 
 has comm_object => (
     is => 'ro',
@@ -19,6 +20,7 @@ has comm_object => (
     required=>1,
     lazy=>1,
     );
+
 has comm_port => (
     is => 'ro',
     isa => 'Str',
@@ -32,11 +34,30 @@ has commands => (
     required=>1,
     lazy=>1,
     );
+
 has file_location =>(
    is => 'rw',
    isa => 'Str',
    default =>  'C:\dump\\',
 );
+
+has sync_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_sync_obj_builder',
+);
+
+sub _sync_obj_builder {
+   my $self=shift;
+   Dwarn 'sync object builder called';
+   Device::CoMedia::C328_7640::CommandProtocol->new(attempts=>5, comm_object => $self->comm_object, commands=>$self->commands)
+}
+sub sync_test{
+   my $self = shift;
+   Dwarn 'in sysnc';
+   $self->sync_cmd->snd_rec_cmd({commands=>$self->commands});
+}
 
 sub _build_C328_controller{
     my $self=shift;
@@ -110,7 +131,6 @@ sub sync_cam{
            
            return 1;
         }
-        usleep(6000);
     }
     return 0;
 }
@@ -144,14 +164,14 @@ sub take_picture{
     else{$loc_name .= $file_name; }
 
     $self->generic_snd_packet(INITIAL());
-Dwarn 'initial';
+
     $self->generic_snd_packet(SET_PACKAGE_SIZE());
-Dwarn 'set package size';
+
     my $ack='';
     my ($counter, $image, $image_size);
 
     $self->generic_snd_packet(SNAPSHOT());
-#Dwarn 'set snapshot type';
+
     $ack="";
     my $command=$self->commands->send_command({ID=>GET_PICTURE()});
     Dwarn 'Get picture: ' . $command;
@@ -182,7 +202,7 @@ Dwarn 'set package size';
                                             });
         #Dwarn 'ack ' . $command;
         $self->comm_object->w_output($command);
-        usleep(90000);
+        usleep(60000);
         my $image_data = $self->comm_object->comm_read();
         if( $image_data ne ''){
            $image_data = substr($image_data, 8, -4);
