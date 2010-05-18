@@ -9,9 +9,10 @@ use Devel::Dwarn;
 use Device::CoMedia::C328_7640::Module;
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
-my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM1');
+my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 
 $cam_interface->sync_test();
+#$cam_interface->snapshot();
 
 die;
 

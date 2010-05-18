@@ -88,11 +88,9 @@ sub check_handle {
    }
 }
 
-sub comm_read() {
+sub r_input() {
     my $self = shift;
-    #packed hex unit are the native type for transmission from the comm port
-    # ex. byte '5a' is Z, '0a' is \n etc.
-    (my $count_in, my $string_in) = $self->com_handle->read(4028);
+    (my $count_in, my $string_in) = $self->com_handle->read(1000);
     $string_in = $self->format_for_print($string_in);
     return $string_in;
 }
