@@ -9,6 +9,21 @@ use Devel::Dwarn;
 use Device::CoMedia::C328_7640::Configuration::Exceptions;
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
+has 'parameter' => (
+      traits => ['Hash'],
+      is => 'rw',
+      isa => 'HashRef[Str]',
+      default => sub {{Parameter1 => '00',
+                       Parameter2 => '00',
+                       Parameter3 => '00',
+                       Parameter4 => '00',
+                       }},
+      handles => {
+         set_param => 'set',
+         get_param => 'get',
+         },
+);
+                  
 has 'configuration' => (
       traits    => ['Hash'],
       is        => 'rw',
@@ -23,12 +38,8 @@ has 'configuration' => (
                         freq_value            => FREQ_50() ,
                         reset_type            => R_SYSTEM() } },
       handles   => {
-          set_option     => 'set',
-          get_option     => 'get',
-          has_no_options => 'is_empty',
-          num_options    => 'count',
-          delete_option  => 'delete',
-          pairs          => 'kv',
+          set_config     => 'set',
+          get_config     => 'get',
       },
 
   );
@@ -116,10 +127,13 @@ sub sync_0D{
 }
 
 sub ack_0E{
-    my ($self, $para_list)=@_;
+    my $self =shift;
     #Dwarn 'parms here' , $para_list , 'parms end here';
-    return 'AA'.'0E'.$para_list->{Parameter1}.$para_list->{Parameter2}
-                    .$para_list->{Parameter3}.$para_list->{Parameter4};
+    return 'AA'.'0E'.$self->parameter->{Parameter1}
+                     .$self->parameter->{Parameter2}
+                     .$self->parameter->{Parameter3}
+                     .$self->parameter->{Parameter4};
+
 }
 
 sub light_frequency_13{

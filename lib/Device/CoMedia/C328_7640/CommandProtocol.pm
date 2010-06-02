@@ -14,24 +14,25 @@ has comm_object => (
     required=>1,
 );
 
-has attempts => (
+has repeats => (
    is => 'rw',
    isa => 'Int',
    required=> 1,
 );
-
-has commandset => (
-    is => 'ro',
-    isa => 'Device::CoMedia::C328_7640::CommandSet',
-    #builder => '_build_command_list',
-    required=>1,
-    );
 
 has utime => (
    is => 'rw', 
    isa => 'Int',
    required => 1,
    default => 70000,
+);
+
+has respond=> (
+   is => 'rw',
+   isa => 'Bool',
+   required => 1, 
+   lazy => 1,
+   default => 0,
 );
 
 has command => (
@@ -53,51 +54,61 @@ has para => (
                 get_option => 'get',
                 },
 );
-;
-before qw(snd_rec_resp) => sub{
+
+around qw(snd_rec_resp) => sub{
+   my $orig = shift;
+   my $self=shift;
+   my $commandset = shift;
+
+   if(BAUD_115200 eq $commandset->configuration->{baudrate}){
       Dwarn 'baud set at 115200';
       $self->utime(70000);
    }
+   return $self->$orig($commandset);
 };
 #BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 
 
-sub snd_rec{
+sub snd_rec_resp{#{{{
    my $self = shift;
-
-}
-
-sub snd_rec_resp{
-   my $self=shift;
-   my $input;
+   my $commandset = shift;
+   my $input='';
    my $p = $self->para;
    my $attempts= 0; 
 
-   ATTEMPT: for ( 0..$self->attempts){
-      last ATTEMPT if($attempts >2);
-      $self->comm_object->w_output($self->commandset->send_command({id=>$self->command,
-                                                                    parameter1 => $p->{p1},
-                                                                    parameter2 => $p->{p2},
-                                                                    parameter3 => $p->{p3},
-                                                                    parameter4 => $p->{p4},
+   REPEAT: for ( 0..$self->repeats){#numbers of times to send and rec the same cmd
+      last if($attempts >2);#the unit responed with a nak too many times
+      $self->comm_object->w_output($commandset->send_command({ID=>$self->command,
                                                                     }));
-      usleep($self->utime);
-      $input = $self->comm_object->r_input();
-      if((my $id, $p->{p1},$p->{p2},$p->{p3},$p->{p4}) = 
-          $input =~ /..(..)(..)(..)(..)(..)/){
-          if( $id eq '0f'){#nak
-            $attempts++;
-            redo ATTEMPT; 
+      
+      usleep($self->utime);#expected response time from unit
+      for ( 0..2){#times to try and read
+         $input .= $self->comm_object->r_input();
+         if((my $id, $p->{p1},$p->{p2},$p->{p3},$p->{p4}) = 
+            $input =~ /..(..)(..)(..)(..)(..)/){
+
+            if( $id eq '0f'){#nak
+              $attempts++;
+              redo REPEAT; 
+            }
+            if ($self->respond){
+               $self->comm_object->w_output($commandset->send_command({ID=>ACK(),
+                                                                             Parameter1=> $p->{p1},
+                                                                             Parameter2=> $p->{p2},
+                                                                             Parameter3=> $p->{p3},
+                                                                             Parameter4=> $p->{p4},
+                                                                            }));
+            }
+      #      last if($self->command eq SYNC());
+            return   {Parameter1=> $p->{p1},
+                     Parameter2=> $p->{p2},
+                     Parameter3=> $p->{p3},
+                     Parameter4=> $p->{p4},}
+
           }
-          $self->comm_object->w_output($self->commandset->send_command({ID=>ACK(),
-                                                                        Parameter1=> $p->{p1},
-                                                                        Parameter2=> $p->{p2},
-                                                                        Parameter3=> $p->{p3},
-                                                                        Parameter4=> $p->{p4},
-                                                                        }));
-         last;
       }
    }
-}
+   return 0;
+}#}}}
 
 no Moose;
 __PACKAGE__->meta->make_immutable();

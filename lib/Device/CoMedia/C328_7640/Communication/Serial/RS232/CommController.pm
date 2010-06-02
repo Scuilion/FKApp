@@ -88,7 +88,7 @@ sub check_handle {
    }
 }
 
-sub r_input() {
+sub r_input {
     my $self = shift;
     (my $count_in, my $string_in) = $self->com_handle->read(1000);
     $string_in = $self->format_for_print($string_in);

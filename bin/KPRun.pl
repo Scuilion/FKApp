@@ -11,9 +11,9 @@ use Device::CoMedia::C328_7640::Configuration::Constants;
 
 my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 
-$cam_interface->sync_test();
+my $test = $cam_interface->snapshot();
 #$cam_interface->snapshot();
-
+#
 die;
 
 if($cam_interface->sync_cam()){

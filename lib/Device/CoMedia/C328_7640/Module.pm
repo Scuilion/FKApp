@@ -41,6 +41,7 @@ has file_location =>(
    default =>  'C:\dump\\',
 );
 
+#the following are individual objects for each command
 has sync_cmd => (
    is => 'rw',
    isa => 'Device::CoMedia::C328_7640::CommandProtocol',
@@ -55,30 +56,76 @@ has init_cmd => (
    builder => '_init_obj_builder',
 );
 
+has pack_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_pack_obj_builder',
+);
+
+has snap_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_snap_obj_builder',
+);
+
+has get_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_get_obj_builder',
+);
+
 sub _sync_obj_builder {
    my $self=shift;
-   Dwarn 'sync object builder called';
-   Device::CoMedia::C328_7640::CommandProtocol->new(attempts=>30, 
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>30, 
                                                     comm_object => $self->comm_object,
-                                                    commandset=>$self->commandset,
                                                     command=> SYNC(),
-                                                    )
-}
+                                                    respond=> 1,
+                                                    ) }
 
 sub _init_obj_builder {
    my $self=shift;
-   Dwarn 'sync object builder called';
-   Device::CoMedia::C328_7640::CommandProtocol->new(attempts=>5, 
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
                                                     comm_object => $self->comm_object,
-                                                    commandset=>$self->commandset,
                                                     command=> INITIAL(),
-                                                    )
+                                                    ) }
+
+sub _pack_obj_builder {
+   my $self=shift;
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
+                                                    comm_object => $self->comm_object,
+                                                    command=> SET_PACKAGE_SIZE(),
+                                                    ) }
+
+sub _snap_obj_builder {
+   my $self=shift;
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
+                                                    comm_object => $self->comm_object,
+                                                    command=> SNAPSHOT(),
+                                                    ) }
+
+sub _get_obj_builder {
+   my $self=shift;
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
+                                                    comm_object => $self->comm_object,
+                                                    command=> GET_PICTURE(),
+                                                    ) }
+
+sub snapshot{
+   my $self=shift;
+   Dwarn $self->sync_cmd->snd_rec_resp($self->commandset);
+   Dwarn $self->init_cmd->snd_rec_resp($self->commandset);
+   Dwarn $self->pack_cmd->snd_rec_resp($self->commandset);
+   Dwarn $self->snap_cmd->snd_rec_resp($self->commandset);
+   Dwarn $self->get_cmd->snd_rec_resp($self->commandset);
 }
 
-sub sync_test{
+sub sync{
    my $self = shift;
    Dwarn 'in sysnc';
-   $self->sync_cmd->snd_rec_resp();
+   return $self->sync_cmd->snd_rec_resp($self->commandset);
 }
 
 sub _build_C328_controller{
@@ -88,33 +135,33 @@ sub _build_command_list{ Device::CoMedia::C328_7640::CommandSet->new() }
 
 sub change_preview_res{
     my ($self, $ct) = @_;
-    $self->commandset->set_option(preview_resolution=>$ct);
+    $self->commandset->set_config(preview_resolution=>$ct);
 }
 
 sub change_color_type{
     my ($self, $ct) = @_;
-    $self->commandset->set_option(color_type=>$ct);
+    $self->commandset->set_config(color_type=>$ct);
 }
 
 sub change_jpeg_res{
     my ($self, $ct) = @_;
-    $self->commandset->set_option(jpeg_resolution=>$ct);
+    $self->commandset->set_config(jpeg_resolution=>$ct);
 }
 
 sub change_picture_type{
     my ($self, $ct) = @_;
-    $self->commandset->set_option(picture_type=>$ct);
+    $self->commandset->set_config(picture_type=>$ct);
 }
 
 sub change_snapshot_type{
     my ($self, $ct) = @_;
-    $self->commandset->set_option(snapshot_type=>$ct);
+    $self->commandset->set_config(snapshot_type=>$ct);
 }
 
 sub set_package_size{
     my ($self, $ct) = @_;
     if($ct >= 64 && $ct <=512){
-      $self->commandset->set_option(package_size=>$ct);
+      $self->commandset->set_config(package_size=>$ct);
     }
     else{
       die 'size not acceptable';
@@ -125,7 +172,7 @@ sub set_baudrate{
     my ($self, $ct) = @_;
 
     if( $ct ~~ [BAUD_7200(), BAUD_9600(), BAUD_14400(), BAUD_19200(), BAUD_28800(), BAUD_38400(), BAUD_57600(), BAUD_115200()] ){
-        $self->commandset->set_option(baudrate=>$ct);
+        $self->baud_cmd->commandset->set_config(baudrate=>$ct);
     }
     else{
       die 'baudrate not valid';
@@ -134,13 +181,9 @@ sub set_baudrate{
 
 sub change_light_freq{
    my ($self, $ct) = @_;
-   $self->commandset->set_option(freq_value=>$ct);
+   $self->commandset->set_config(freq_value=>$ct);
 }
 
-sub snapshot{
-   my $self=shift;
-   $self->init_cmd->snd_rec_resp();
-}
 
 sub generic_snd_packet{
    my $self=shift;
