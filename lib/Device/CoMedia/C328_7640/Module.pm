@@ -41,6 +41,17 @@ has file_location =>(
    default =>  'C:\dump\\',
 );
 
+has file_name => (
+   is => 'rw',
+   isa => 'Str',
+   default => '',
+);
+
+has file_handle => (
+   is => 'rw',
+   isa => 'FileHandle',
+);
+
 #the following are individual objects for each command
 has sync_cmd => (
    is => 'rw',
@@ -76,6 +87,12 @@ has get_cmd => (
    lazy => 1,
    builder => '_get_obj_builder',
 );
+#end of command objects
+
+sub _build_C328_controller{
+    my $self=shift;
+    Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
+sub _build_command_list{ Device::CoMedia::C328_7640::CommandSet->new() }
 
 sub _sync_obj_builder {
    my $self=shift;
@@ -112,14 +129,17 @@ sub _get_obj_builder {
                                                     comm_object => $self->comm_object,
                                                     command=> GET_PICTURE(),
                                                     ) }
+#end of builders for command objects
 
 sub snapshot{
    my $self=shift;
+   my $filehandle = shift;
+
    Dwarn $self->sync_cmd->snd_rec_resp($self->commandset);
    Dwarn $self->init_cmd->snd_rec_resp($self->commandset);
    Dwarn $self->pack_cmd->snd_rec_resp($self->commandset);
    Dwarn $self->snap_cmd->snd_rec_resp($self->commandset);
-   Dwarn $self->get_cmd->snd_rec_resp($self->commandset);
+   $filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
 }
 
 sub sync{
@@ -128,10 +148,6 @@ sub sync{
    return $self->sync_cmd->snd_rec_resp($self->commandset);
 }
 
-sub _build_C328_controller{
-    my $self=shift;
-    Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
-sub _build_command_list{ Device::CoMedia::C328_7640::CommandSet->new() }
 
 sub change_preview_res{
     my ($self, $ct) = @_;

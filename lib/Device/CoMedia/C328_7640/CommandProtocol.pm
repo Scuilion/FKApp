@@ -35,6 +35,12 @@ has respond=> (
    default => 0,
 );
 
+has image_size=>(
+   is => 'rw',
+   isa => 'Int',
+   default => 2,
+); 
+
 has command => (
    is => 'rw',
    isa => 'Str',
@@ -61,14 +67,13 @@ around qw(snd_rec_resp) => sub{
    my $commandset = shift;
 
    if(BAUD_115200 eq $commandset->configuration->{baudrate}){
-      Dwarn 'baud set at 115200';
-      $self->utime(70000);
+      $self->utime(60000);
    }
    return $self->$orig($commandset);
 };
 #BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 
 
-sub snd_rec_resp{#{{{
+sub snd_rec_resp{
    my $self = shift;
    my $commandset = shift;
    my $input='';
@@ -76,39 +81,46 @@ sub snd_rec_resp{#{{{
    my $attempts= 0; 
 
    REPEAT: for ( 0..$self->repeats){#numbers of times to send and rec the same cmd
-      last if($attempts >2);#the unit responed with a nak too many times
+      last if($attempts >2);#the unit has responed with a nak too many times
       $self->comm_object->w_output($commandset->send_command({ID=>$self->command,
                                                                     }));
       
       usleep($self->utime);#expected response time from unit
       for ( 0..2){#times to try and read
          $input .= $self->comm_object->r_input();
-         if((my $id, $p->{p1},$p->{p2},$p->{p3},$p->{p4}) = 
-            $input =~ /..(..)(..)(..)(..)(..)/){
+         if((my $id, $p->{p1},$p->{p2},$p->{p3},$p->{p4}, my $extra) = 
+            $input =~ /aa(..)(..)(..)(..)(..)(.*)/){
 
             if( $id eq '0f'){#nak
               $attempts++;
               redo REPEAT; 
             }
-            if ($self->respond){
-               $self->comm_object->w_output($commandset->send_command({ID=>ACK(),
-                                                                             Parameter1=> $p->{p1},
-                                                                             Parameter2=> $p->{p2},
-                                                                             Parameter3=> $p->{p3},
-                                                                             Parameter4=> $p->{p4},
-                                                                            }));
+            
+            if(my ( $i0, $i1, $i2) =  
+               $extra =~ /aa0a..(..)(..)(..).*/){#this is the metadata for the picture lengh
             }
-      #      last if($self->command eq SYNC());
-            return   {Parameter1=> $p->{p1},
-                     Parameter2=> $p->{p2},
-                     Parameter3=> $p->{p3},
-                     Parameter4=> $p->{p4},}
 
+            if ($self->respond){
+               $self->ack_it($commandset, $p->{p1}, $p->{p2}, $p->{p3}, $p->{p4});
+            }
+            return{Parameter1=> $p->{p1}, Parameter2=> $p->{p2}, Parameter3=> $p->{p3}, Parameter4=> $p->{p4}, }
           }
       }
    }
    return 0;
-}#}}}
+}
+
+sub ack_it{
+   my $self = shift;
+   my $cmdset = shift;
+   my ($p1, $p2, $p3, $p4) = @_;
+   $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
+                                                         Parameter1=>$p1,
+                                                         Parameter2=>$p2,
+                                                         Parameter3=>$p3,
+                                                         Parameter4=>$p4,
+                                                         }));
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable();
