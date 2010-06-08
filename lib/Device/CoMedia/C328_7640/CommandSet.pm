@@ -72,7 +72,7 @@ sub send_command{
 
 sub initialize_01{
     my ($self, $para_list)=@_;
-    return 'AA'.'01'.'00'.$self->configuration->{color_type}
+    return 'AA'.'f1'.'00'.$self->configuration->{color_type}
                      .$self->configuration->{preview_resolution}
                      .$self->configuration->{jpeg_resolution};
 }
