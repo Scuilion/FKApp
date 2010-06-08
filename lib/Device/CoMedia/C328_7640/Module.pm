@@ -121,7 +121,6 @@ has data_cmd => (
 after qw(snapshot) => sub{#lets try and reset the device
    my $self = shift;
    if( $self->get_ret_v('error') ne '00'){
-      Dwarn 'called after';
       $self->reset_cmd->snd_rec_resp($self->commandset);
    }
 
@@ -179,6 +178,7 @@ sub _data_obj_builder {
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1,
                                                     comm_object => $self->comm_object,
                                                     command=> DATA(),
+                                                    respond=> 1,
                                                     ) }
 
 
@@ -215,6 +215,9 @@ sub snapshot{
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
+   for(1..$self->get_ret_v('packet_qty')){
+      Dwarn $res = $self->data_cmd->snd_rec_data($self->commandset, $self->return_value);
+   }
    return $self->return_value;
 }#end of camera functions
 
@@ -269,25 +272,6 @@ sub change_light_freq{
    my ($self, $ct) = @_;
    $self->commandset->set_config(freq_value=>$ct);
 }#end of methods for chaning configuration
-
-
-sub generic_snd_packet{
-   my $self=shift;
-   my $action = shift;
-   my $tries = shift;
-
-   my $command=$self->commandset->send_command({ID=>$action });
-   $self->comm_object->w_output($command);
-
-    my ($ack, $counter, $image_size, $image);
-    for my $i (0..10){
-        usleep(70000);
-        $ack .= $self->comm_object->comm_read();
-        #Dwarn 'rec 1: ' . $ack;
-        last if( $ack=~/......(..)..../);
-        return 0 if($i==10);
-    }
-}
 
 sub take_picture{
     my $self=shift;

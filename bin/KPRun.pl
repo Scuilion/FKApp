@@ -17,7 +17,7 @@ if($test->{error} eq "00"){
    Dwarn 'got to end of program with no errors';
 }
 else{
-    Dwarn 'no sync';
+    Dwarn 'error getting picture';
 }
 1;
 
