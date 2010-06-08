@@ -48,39 +48,42 @@ has command => (
    required => 1,
 );
 
-has para => (
-   traits => ['Hash'],
-   is => 'rw',
-   isa => 'HashRef[Str]',
-   default => sub {{ p1 => '',
-                     p2 => '',
-                     p3 => '',
-                     p4 => '',
-                     error => '',
-                     }},
-   handles => {
-                set_option => 'set',
-                get_option => 'get',
-                },
-);
+#has para => (
+#   traits => ['Hash'],
+#   is => 'rw',
+#   isa => 'HashRef[Str]',
+#   default => sub {{ p1 => '',
+#                     p2 => '',
+#                     p3 => '',
+#                     p4 => '',
+#                     error => '00',
+#                     }},
+#   handles => {
+#                set_option => 'set',
+#                get_option => 'get',
+#                },
+#);
 
 around qw(snd_rec_resp) => sub{
    my $orig = shift;
    my $self=shift;
    my $commandset = shift;
+   my $param = shift;
 
    if(BAUD_115200 eq $commandset->configuration->{baudrate}){
       $self->utime(60000);
    }
-   return $self->$orig($commandset);
+   return $self->$orig($commandset, $param);
 };
 #BAUD_7200 BAUD_9600 BAUD_14400 BAUD_19200 BAUD_28800 BAUD_38400 BAUD_57600 
 
 sub snd_rec_resp{
    my $self = shift;
    my $commandset = shift;
+   my $param = shift;
+   
    my $input='';
-   my $p = $self->para;
+   
    my $attempts= 0; 
    my $id;
    my $extra;
@@ -95,15 +98,19 @@ sub snd_rec_resp{
          $input .= $self->comm_object->r_input();
          if($input =~ /aa(..)(..)(..)(..)(..)(.*)/){
             $id = $1;
-            $self->set_option(p1 => $2);
-            $self->set_option(p2 => $3);
-            $self->set_option(p3 => $4);
-            $self->set_option(p4 => $5);
+            #$self->set_option(p1 => $2);
+            #$self->set_option(p2 => $3);
+            #$self->set_option(p3 => $4);
+            #$self->set_option(p4 => $5);
+            $param->{P1}=$2;
+            $param->{P2}=$3;
+            $param->{P3}=$4;
+            $param->{P4}=$5;
             $extra=$6; 
 
             if( $id eq '0f'){#nak
-               $self->para->set_option(error=>$3);
-               return $self->para;
+               $param->{error}=$3;
+               return $param;
             }
             
             if(my ( $i0, $i1, $i2) =  
@@ -113,24 +120,25 @@ sub snd_rec_resp{
             }
 
             if ($self->respond){
-               $self->ack_it($commandset);
+               $self->ack_it($commandset, $param);
             }
-            return $self->para;
+            return $param;
           }
       }
    }
-   return {error=>"A"};
+   return {error=>"A0"};
 }
 
 sub ack_it{
    my $self = shift;
    my $cmdset = shift;
+   my $Param= shift;
    Dwarn 'ack it man';
    $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
-                                                         Parameter1=>$self->get_option('p1'),
-                                                         Parameter2=>$self->get_option('p2'),
-                                                         Parameter3=>$self->get_option('p3'),
-                                                         Parameter4=>$self->get_option('p4'),
+                                                         Parameter1=>$Param->{'p1'},
+                                                         Parameter2=>$Param->{'p2'},
+                                                         Parameter3=>$Param->{'p3'},
+                                                         Parameter4=>$Param->{'p4'},
                                                          }));
 }
 

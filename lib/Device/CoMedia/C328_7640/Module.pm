@@ -56,11 +56,11 @@ has return_value => (
    traits => ['Hash'],
    is => 'rw',
    isa => 'HashRef[Str]',
-   default => sub { {error=>'',
-                     Parameter1=>'',
-                     Parameter2=>'',
-                     Parameter3=>'',
-                     Parameter4=>''}},
+   default => sub { {error=>'00',
+                     P1=>'',
+                     P2=>'',
+                     P3=>'',
+                     P4=>''}},
    lazy => 1,
    handles   => {
           set_ret_v => 'set',
@@ -103,17 +103,24 @@ has get_cmd => (
    lazy => 1,
    builder => '_get_obj_builder',
 );
+
 has reset_cmd => (
    is => 'rw',
    isa => 'Device::CoMedia::C328_7640::CommandProtocol',
    lazy => 1,
    builder => '_reset_obj_builder',
 );
-
 #end of command objects
-after qw(snapshot) => sub{
-   Dwarn 'called after';
+
+after qw(snapshot) => sub{#lets try and reset the device
+   my $self = shift;
+   if( $self->get_ret_v('error') ne '00'){
+      Dwarn 'called after';
+      $self->reset_cmd->snd_rec_resp($self->commandset);
+   }
+
 };
+
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
@@ -156,7 +163,8 @@ sub _get_obj_builder {
                                                     ) }
 sub _reset_obj_builder {
    my $self=shift;
-   Device::CoMedia::C328_7640::CommandProtocol->new( comm_object => $self->comm_object,
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1,
+                                                    comm_object => $self->comm_object,
                                                     command=> RESET(),
                                                     ) }
 
@@ -171,27 +179,33 @@ sub sync{
 sub snapshot{
    my $self=shift;
    my $filehandle = shift;
-Dwarn 'called sanpshot';
    my $res;
-
-   Dwarn $res= $self->sync_cmd->snd_rec_resp($self->commandset);
-   Dwarn $self->get_ret_v('error');
-   Dwarn 'response ' , $res;
-   Dwarn $res->{error};
-   $self->set_ret_v(error=>$res->{error});
-   die;
-   return $res if(exists $res->{error});
    
-   Dwarn $self->return_value = $self->init_cmd->snd_rec_resp($self->commandset);
-   return $res if(exists $res->{error});
+   Dwarn $res = $self->sync_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   $self->set_ret_v(error=>$res->{error});
+   return $res if($res->{error} ne '00');
 
-   Dwarn $self->return_value = $self->pack_cmd->snd_rec_resp($self->commandset);
-   return $res if(exists $res->{error});
+   #Dwarn $res = $self->init_cmd->snd_rec_resp($self->commandset);
+   Dwarn $res = $self->init_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   $self->set_ret_v(error=>$res->{error});
+   return $res if($res->{error} ne '00');
 
-   Dwarn $self->return_value = $self->snap_cmd->snd_rec_resp($self->commandset);
-   return $res if(exists $res->{error});
+   #Dwarn $res = $self->pack_cmd->snd_rec_resp($self->commandset);
+   Dwarn $res = $self->pack_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   $self->set_ret_v(error=>$res->{error});
+   return $res if($res->{error} ne '00');
 
-   $filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
+   #Dwarn $res = $self->snap_cmd->snd_rec_resp($self->commandset);
+   Dwarn $res = $self->snap_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   $self->set_ret_v(error=>$res->{error});
+   return $res if($res->{error} ne '00');
+
+   Dwarn $res = $self->get_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   $self->set_ret_v(error=>$res->{error});
+   return $res if($res->{error} ne '00');
+
+   return $self->return_value;
+   #$filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
 }#end of camera functions
 
 #methods for changing the configurations
@@ -307,10 +321,10 @@ sub take_picture{
 
     for my $ack_counter(0..$image_size+1){
         $command=$self->commandset->send_command({ID=>ACK(),
-                                            Parameter1=>'00',
-                                            Parameter2=>'00',
-                                            Parameter3=>sprintf( "%02x", $ack_counter),
-                                            Parameter4=>'00', 
+                                            P1=>'00',
+                                            P2=>'00',
+                                            P3=>sprintf( "%02x", $ack_counter),
+                                            P4=>'00', 
                                             });
         #Dwarn 'ack ' . $command;
         $self->comm_object->w_output($command);
@@ -334,10 +348,10 @@ sub take_picture{
     }
     
     my $temp =$self->commandset->send_command({ID=>ACK(),
-                    Parameter1=>'0e',
-                    Parameter2=>$counter,
-                    Parameter3=>'00',
-                    Parameter4=>'00',
+                    P=>'0e',
+                    P2=>$counter,
+                    P3=>'00',
+                    P4=>'00',
                     });
         Dwarn 'response ' . $temp;
         $self->comm_object->w_output($temp);

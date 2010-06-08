@@ -12,17 +12,11 @@ use Device::CoMedia::C328_7640::Configuration::Constants;
 my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 
 my $test = $cam_interface->snapshot();
-#$cam_interface->snapshot();
-#
-die;
 
-if($cam_interface->sync_cam()){
-    if($cam_interface->take_picture()){
-        Dwarn 'got a picture';
-    }
-    else{
-        Dwarn 'failed to get a picture';
-    }
+Dwarn 'what\'s in test', $test;
+
+if($test->{error} ne ""){
+   Dwarn 'got to end of program with no errors';
 }
 else{
     Dwarn 'no sync';

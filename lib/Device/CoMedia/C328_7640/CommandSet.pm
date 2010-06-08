@@ -36,7 +36,7 @@ has 'configuration' => (
                         package_size          => 512,
                         baudrate              => BAUD_115200(),
                         freq_value            => FREQ_50() ,
-                        reset_type            => R_SYSTEM() } },
+                        reset_type            => R_STATE() } },
       handles   => {
           set_config     => 'set',
           get_config     => 'get',
@@ -72,7 +72,7 @@ sub send_command{
 
 sub initialize_01{
     my ($self, $para_list)=@_;
-    return 'AA'.'f1'.'00'.$self->configuration->{color_type}
+    return 'AA'.'01'.'00'.$self->configuration->{color_type}
                      .$self->configuration->{preview_resolution}
                      .$self->configuration->{jpeg_resolution};
 }
