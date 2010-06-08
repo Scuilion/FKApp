@@ -135,10 +135,20 @@ sub snapshot{
    my $self=shift;
    my $filehandle = shift;
 
-   Dwarn $self->sync_cmd->snd_rec_resp($self->commandset);
-   Dwarn $self->init_cmd->snd_rec_resp($self->commandset);
-   Dwarn $self->pack_cmd->snd_rec_resp($self->commandset);
-   Dwarn $self->snap_cmd->snd_rec_resp($self->commandset);
+   my $response;
+
+   Dwarn $response = $self->sync_cmd->snd_rec_resp($self->commandset);
+   return $response if(exists $response->{error});
+   
+   Dwarn $response =$self->init_cmd->snd_rec_resp($self->commandset);
+   return $response if(exists $response->{error});
+
+   Dwarn $response =$self->pack_cmd->snd_rec_resp($self->commandset);
+   return $response if(exists $response->{error});
+
+   Dwarn $response =$self->snap_cmd->snd_rec_resp($self->commandset);
+   return $response if(exists $response->{error});
+
    $filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
 }
 

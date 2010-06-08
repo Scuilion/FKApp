@@ -5,6 +5,7 @@ use feature ':5.10';
 use Moose;
 use Devel::Dwarn;
 use Time::HiRes qw(usleep);
+use POSIX qw(ceil);
 
 use Device::CoMedia::C328_7640::Configuration::Constants;
 
@@ -92,12 +93,13 @@ sub snd_rec_resp{
             $input =~ /aa(..)(..)(..)(..)(..)(.*)/){
 
             if( $id eq '0f'){#nak
-              $attempts++;
-              redo REPEAT; 
+              return {error=>$p->{p3}};
             }
             
             if(my ( $i0, $i1, $i2) =  
                $extra =~ /aa0a..(..)(..)(..).*/){#this is the metadata for the picture lengh
+               my $image_size = ceil(hex($i2.$i1.$i0)/506);
+               Dwarn 'inside inside', $image_size;
             }
 
             if ($self->respond){
@@ -107,13 +109,14 @@ sub snd_rec_resp{
           }
       }
    }
-   return 0;
+   return {error=>"A"};
 }
 
 sub ack_it{
    my $self = shift;
    my $cmdset = shift;
    my ($p1, $p2, $p3, $p4) = @_;
+   Dwarn 'ack it man';
    $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
                                                          Parameter1=>$p1,
                                                          Parameter2=>$p2,
