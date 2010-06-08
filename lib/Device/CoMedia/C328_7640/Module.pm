@@ -185,17 +185,14 @@ sub snapshot{
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
-   #Dwarn $res = $self->init_cmd->snd_rec_resp($self->commandset);
    Dwarn $res = $self->init_cmd->snd_rec_resp($self->commandset, $self->return_value);
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
-   #Dwarn $res = $self->pack_cmd->snd_rec_resp($self->commandset);
    Dwarn $res = $self->pack_cmd->snd_rec_resp($self->commandset, $self->return_value);
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
-   #Dwarn $res = $self->snap_cmd->snd_rec_resp($self->commandset);
    Dwarn $res = $self->snap_cmd->snd_rec_resp($self->commandset, $self->return_value);
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');

@@ -98,10 +98,6 @@ sub snd_rec_resp{
          $input .= $self->comm_object->r_input();
          if($input =~ /aa(..)(..)(..)(..)(..)(.*)/){
             $id = $1;
-            #$self->set_option(p1 => $2);
-            #$self->set_option(p2 => $3);
-            #$self->set_option(p3 => $4);
-            #$self->set_option(p4 => $5);
             $param->{P1}=$2;
             $param->{P2}=$3;
             $param->{P3}=$4;
@@ -112,14 +108,13 @@ sub snd_rec_resp{
                $param->{error}=$3;
                return $param;
             }
-            
+
             if(my ( $i0, $i1, $i2) =  
                $extra =~ /aa0a..(..)(..)(..).*/){#this is the metadata for the picture lengh
-               my $image_size = ceil(hex($i2.$i1.$i0)/506);
-               Dwarn 'inside inside', $image_size;
+               $param->{packet_qty}=ceil(hex($i2.$i1.$i0)/506);
             }
 
-            if ($self->respond){
+            if ($self->respond){#the unit is expecting an ack back
                $self->ack_it($commandset, $param);
             }
             return $param;
