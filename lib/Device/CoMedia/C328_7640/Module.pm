@@ -52,6 +52,22 @@ has file_handle => (
    isa => 'FileHandle',
 );
 
+has return_value => (
+   traits => ['Hash'],
+   is => 'rw',
+   isa => 'HashRef[Str]',
+   default => sub { {error=>'',
+                     Parameter1=>'',
+                     Parameter2=>'',
+                     Parameter3=>'',
+                     Parameter4=>''}},
+   lazy => 1,
+   handles   => {
+          set_ret_v => 'set',
+          get_ret_v => 'get',
+      },
+);
+
 #the following are individual objects for each command
 has sync_cmd => (
    is => 'rw',
@@ -87,8 +103,17 @@ has get_cmd => (
    lazy => 1,
    builder => '_get_obj_builder',
 );
-#end of command objects
+has reset_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_reset_obj_builder',
+);
 
+#end of command objects
+after qw(snapshot) => sub{
+   Dwarn 'called after';
+};
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
@@ -129,28 +154,13 @@ sub _get_obj_builder {
                                                     comm_object => $self->comm_object,
                                                     command=> GET_PICTURE(),
                                                     ) }
-#end of builders for command objects
-
-sub snapshot{
+sub _reset_obj_builder {
    my $self=shift;
-   my $filehandle = shift;
+   Device::CoMedia::C328_7640::CommandProtocol->new( comm_object => $self->comm_object,
+                                                    command=> RESET(),
+                                                    ) }
 
-   my $response;
-
-   Dwarn $response = $self->sync_cmd->snd_rec_resp($self->commandset);
-   return $response if(exists $response->{error});
-   
-   Dwarn $response =$self->init_cmd->snd_rec_resp($self->commandset);
-   return $response if(exists $response->{error});
-
-   Dwarn $response =$self->pack_cmd->snd_rec_resp($self->commandset);
-   return $response if(exists $response->{error});
-
-   Dwarn $response =$self->snap_cmd->snd_rec_resp($self->commandset);
-   return $response if(exists $response->{error});
-
-   $filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
-}
+#end of builders for command objects
 
 sub sync{
    my $self = shift;
@@ -158,7 +168,33 @@ sub sync{
    return $self->sync_cmd->snd_rec_resp($self->commandset);
 }
 
+sub snapshot{
+   my $self=shift;
+   my $filehandle = shift;
+Dwarn 'called sanpshot';
+   my $res;
 
+   Dwarn $res= $self->sync_cmd->snd_rec_resp($self->commandset);
+   Dwarn $self->get_ret_v('error');
+   Dwarn 'response ' , $res;
+   Dwarn $res->{error};
+   $self->set_ret_v(error=>$res->{error});
+   die;
+   return $res if(exists $res->{error});
+   
+   Dwarn $self->return_value = $self->init_cmd->snd_rec_resp($self->commandset);
+   return $res if(exists $res->{error});
+
+   Dwarn $self->return_value = $self->pack_cmd->snd_rec_resp($self->commandset);
+   return $res if(exists $res->{error});
+
+   Dwarn $self->return_value = $self->snap_cmd->snd_rec_resp($self->commandset);
+   return $res if(exists $res->{error});
+
+   $filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
+}#end of camera functions
+
+#methods for changing the configurations
 sub change_preview_res{
     my ($self, $ct) = @_;
     $self->commandset->set_config(preview_resolution=>$ct);
@@ -208,7 +244,7 @@ sub set_baudrate{
 sub change_light_freq{
    my ($self, $ct) = @_;
    $self->commandset->set_config(freq_value=>$ct);
-}
+}#end of methods for chaning configuration
 
 
 sub generic_snd_packet{
