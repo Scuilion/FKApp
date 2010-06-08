@@ -49,12 +49,14 @@ has command => (
 );
 
 has para => (
+   traits => ['Hash'],
    is => 'rw',
    isa => 'HashRef[Str]',
-   default => sub {{ p1 => '00',
-                     p2 => '00',
-                     p3 => '00',
-                     p4 => '00',
+   default => sub {{ p1 => '',
+                     p2 => '',
+                     p3 => '',
+                     p4 => '',
+                     error => '',
                      }},
    handles => {
                 set_option => 'set',
@@ -80,6 +82,8 @@ sub snd_rec_resp{
    my $input='';
    my $p = $self->para;
    my $attempts= 0; 
+   my $id;
+   my $extra;
 
    REPEAT: for ( 0..$self->repeats){#numbers of times to send and rec the same cmd
       last if($attempts >2);#the unit has responed with a nak too many times
@@ -89,11 +93,17 @@ sub snd_rec_resp{
       usleep($self->utime);#expected response time from unit
       for ( 0..2){#times to try and read
          $input .= $self->comm_object->r_input();
-         if((my $id, $p->{p1},$p->{p2},$p->{p3},$p->{p4}, my $extra) = 
-            $input =~ /aa(..)(..)(..)(..)(..)(.*)/){
+         if($input =~ /aa(..)(..)(..)(..)(..)(.*)/){
+            $id = $1;
+            $self->set_option(p1 => $2);
+            $self->set_option(p2 => $3);
+            $self->set_option(p3 => $4);
+            $self->set_option(p4 => $5);
+            $extra=$6; 
 
             if( $id eq '0f'){#nak
-              return {error=>$p->{p3}};
+               $self->para->set_option(error=>$3);
+               return $self->para;
             }
             
             if(my ( $i0, $i1, $i2) =  
@@ -103,9 +113,9 @@ sub snd_rec_resp{
             }
 
             if ($self->respond){
-               $self->ack_it($commandset, $p->{p1}, $p->{p2}, $p->{p3}, $p->{p4});
+               $self->ack_it($commandset);
             }
-            return{Parameter1=> $p->{p1}, Parameter2=> $p->{p2}, Parameter3=> $p->{p3}, Parameter4=> $p->{p4}, }
+            return $self->para;
           }
       }
    }
@@ -115,13 +125,12 @@ sub snd_rec_resp{
 sub ack_it{
    my $self = shift;
    my $cmdset = shift;
-   my ($p1, $p2, $p3, $p4) = @_;
    Dwarn 'ack it man';
    $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
-                                                         Parameter1=>$p1,
-                                                         Parameter2=>$p2,
-                                                         Parameter3=>$p3,
-                                                         Parameter4=>$p4,
+                                                         Parameter1=>$self->get_option('p1'),
+                                                         Parameter2=>$self->get_option('p2'),
+                                                         Parameter3=>$self->get_option('p3'),
+                                                         Parameter4=>$self->get_option('p4'),
                                                          }));
 }
 
