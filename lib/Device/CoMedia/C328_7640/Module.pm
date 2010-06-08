@@ -110,7 +110,13 @@ has reset_cmd => (
    lazy => 1,
    builder => '_reset_obj_builder',
 );
-#end of command objects
+
+has data_cmd => (
+   is => 'rw',
+   isa => 'Device::CoMedia::C328_7640::CommandProtocol',
+   lazy => 1,
+   builder => '_data_obj_builder',
+);#end of command objects
 
 after qw(snapshot) => sub{#lets try and reset the device
    my $self = shift;
@@ -168,6 +174,14 @@ sub _reset_obj_builder {
                                                     command=> RESET(),
                                                     ) }
 
+sub _data_obj_builder {
+   my $self=shift;
+   Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1,
+                                                    comm_object => $self->comm_object,
+                                                    command=> DATA(),
+                                                    ) }
+
+
 #end of builders for command objects
 
 sub sync{
@@ -202,7 +216,6 @@ sub snapshot{
    return $res if($res->{error} ne '00');
 
    return $self->return_value;
-   #$filehandle = $self->get_cmd->snd_rec_resp($self->commandset);
 }#end of camera functions
 
 #methods for changing the configurations
@@ -321,7 +334,7 @@ sub take_picture{
                                             P1=>'00',
                                             P2=>'00',
                                             P3=>sprintf( "%02x", $ack_counter),
-                                            P4=>'00', 
+                                            P4=>sprintf( "%02x", 0), 
                                             });
         #Dwarn 'ack ' . $command;
         $self->comm_object->w_output($command);
@@ -345,7 +358,7 @@ sub take_picture{
     }
     
     my $temp =$self->commandset->send_command({ID=>ACK(),
-                    P=>'0e',
+                    P1=>'0e',
                     P2=>$counter,
                     P3=>'00',
                     P4=>'00',

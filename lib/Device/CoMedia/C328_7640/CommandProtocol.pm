@@ -48,6 +48,13 @@ has command => (
    required => 1,
 );
 
+sub BUILD {#to retreive picture data is slightly different than all the other commands
+   my $self=shift;
+   if($self->command eq DATA()){
+      Moose::Util::apply_all_roles($self, ('Device::CoMedia::C328_7640::DataProtocol'));
+      Dwarn 'appling a moose role';
+   }
+};
 #has para => (
 #   traits => ['Hash'],
 #   is => 'rw',
@@ -122,6 +129,10 @@ sub snd_rec_resp{
       }
    }
    return {error=>"A0"};
+}
+
+sub get_image_packet{
+   my $self = shift;
 }
 
 sub ack_it{

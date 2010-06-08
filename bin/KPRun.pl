@@ -13,7 +13,7 @@ my $cam_interface = Device::CoMedia::C328_7640::Module->new(comm_port=>'COM4');
 
 my $test = $cam_interface->snapshot();
 
-if($test->{error} ne ""){
+if($test->{error} eq "00"){
    Dwarn 'got to end of program with no errors';
 }
 else{
