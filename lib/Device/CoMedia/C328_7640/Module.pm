@@ -215,9 +215,8 @@ sub snapshot{
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
-   for(1..$self->get_ret_v('packet_qty')){
-      Dwarn $res = $self->data_cmd->snd_rec_data($self->commandset, $self->return_value);
-   }
+   Dwarn $self->get_ret_v('packet_qty');
+   Dwarn $res = $self->data_cmd->snd_rec_data($self->commandset, $self->return_value, $res->{packet_qty});
    return $self->return_value;
 }#end of camera functions
 

@@ -55,21 +55,6 @@ sub BUILD {#to retreive picture data is slightly different than all the other co
       Dwarn 'appling a moose role';
    }
 };
-#has para => (
-#   traits => ['Hash'],
-#   is => 'rw',
-#   isa => 'HashRef[Str]',
-#   default => sub {{ p1 => '',
-#                     p2 => '',
-#                     p3 => '',
-#                     p4 => '',
-#                     error => '00',
-#                     }},
-#   handles => {
-#                set_option => 'set',
-#                get_option => 'get',
-#                },
-#);
 
 around qw(snd_rec_resp) => sub{
    my $orig = shift;
@@ -103,6 +88,7 @@ sub snd_rec_resp{
       usleep($self->utime);#expected response time from unit
       for ( 0..2){#times to try and read
          $input .= $self->comm_object->r_input();
+         
          if($input =~ /aa(..)(..)(..)(..)(..)(.*)/){
             $id = $1;
             $param->{P1}=$2;
@@ -115,10 +101,12 @@ sub snd_rec_resp{
                $param->{error}=$3;
                return $param;
             }
-
-            if(my ( $i0, $i1, $i2) =  
-               $extra =~ /aa0a..(..)(..)(..).*/){#this is the metadata for the picture lengh
-               $param->{packet_qty}=ceil(hex($i2.$i1.$i0)/506);
+            if( $self->command eq GET_PICTURE() ){#Data ack came back
+               if(my ( $i0, $i1, $i2) =  
+                  $extra =~ /aa0a..(..)(..)(..).*/){#this is the metadata for the picture lengh
+                  Dwarn 'recognized the get picture';
+                  $param->{packet_qty}=ceil(hex($i2.$i1.$i0)/506);
+               }
             }
 
             if ($self->respond){#the unit is expecting an ack back
@@ -141,10 +129,10 @@ sub ack_it{
    my $Param= shift;
    Dwarn 'ack it man';
    $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
-                                                         Parameter1=>$Param->{'p1'},
-                                                         Parameter2=>$Param->{'p2'},
-                                                         Parameter3=>$Param->{'p3'},
-                                                         Parameter4=>$Param->{'p4'},
+                                                         P1=>$Param->{'p1'},
+                                                         P2=>$Param->{'p2'},
+                                                         P3=>$Param->{'p3'},
+                                                         P4=>$Param->{'p4'},
                                                          }));
 }
 

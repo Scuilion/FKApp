@@ -13,10 +13,10 @@ has 'parameter' => (
       traits => ['Hash'],
       is => 'rw',
       isa => 'HashRef[Str]',
-      default => sub {{Parameter1 => '00',
-                       Parameter2 => '00',
-                       Parameter3 => '00',
-                       Parameter4 => '00',
+      default => sub {{P1=> '00',
+                       P2=> '00',
+                       P3=> '00',
+                       P4=> '00',
                        }},
       handles => {
          set_param => 'set',
@@ -128,11 +128,11 @@ sub sync_0D{
 
 sub ack_0E{
     my $self =shift;
-    #Dwarn 'parms here' , $para_list , 'parms end here';
-    return 'AA'.'0E'.$self->parameter->{Parameter1}
-                     .$self->parameter->{Parameter2}
-                     .$self->parameter->{Parameter3}
-                     .$self->parameter->{Parameter4};
+    #Dwarn 'parms here' , $self, 'parms end here';
+    return 'AA'.'0E'.$self->parameter->{P1}
+                     .$self->parameter->{P2}
+                     .$self->parameter->{P3}
+                     .$self->parameter->{P4};
 
 }
 
