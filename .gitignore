@@ -4,3 +4,4 @@ CommConfig
 koi8
 hashObject.pm
 cover_db/*
+*.swp

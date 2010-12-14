@@ -7,6 +7,7 @@ use Devel::Dwarn;
 use DateTime;
 use Time::HiRes qw(usleep);
 use POSIX qw(ceil);
+use File::HomeDir;
 
 use Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController;
 use Device::CoMedia::C328_7640::CommandSet;
@@ -38,7 +39,8 @@ has commandset => (
 has file_location =>(
    is => 'rw',
    isa => 'Str',
-   default =>  'C:\dump\\',
+   default => sub { File::HomeDir->my_home . "/C328_7640/"}
+   #default =>  'C:\Users\dump\\',
 );
 
 has file_name => (

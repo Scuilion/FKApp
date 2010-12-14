@@ -48,11 +48,10 @@ has command => (
    required => 1,
 );
 
-sub BUILD {#to retreive picture data is slightly different than all the other commands
+sub BUILD {#to retreive raw picture data is slightly different than all the other commands
    my $self=shift;
    if($self->command eq DATA()){
       Moose::Util::apply_all_roles($self, ('Device::CoMedia::C328_7640::DataProtocol'));
-      Dwarn 'appling a moose role';
    }
 };
 

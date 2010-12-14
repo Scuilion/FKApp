@@ -1,3 +1,5 @@
+#This is the package that gets the raw photo data all other commands are handled by
+#the Device::CoMedia:;C328_7640::CommandProtocol
 package Device::CoMedia::C328_7640::DataProtocol;
 
 use Devel::Dwarn;
@@ -11,9 +13,11 @@ sub snd_rec_data{
    my $commandset = shift;
    my $param = shift;
    my $packet_qty = shift;
-   
-my $command;
-open(my $file, '>>', 'C:\dump\testing');
+   my $command;
+   Dwarn $self;
+   #DwarnN $self;
+
+open(my $file, '>>', 'C:/Users/Kevin/C328_7640/filename.jpg');
 binmode $file;
    for my $ack_counter(0..$packet_qty+1){
    Dwarn $ack_counter;
