@@ -13,6 +13,7 @@ sub snd_rec_data{
    my $commandset = shift;
    my $param = shift;
    my $packet_qty = shift;
+
    my $command;
    Dwarn $self;
    #DwarnN $self;

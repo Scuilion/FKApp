@@ -40,7 +40,6 @@ has file_location =>(
    is => 'rw',
    isa => 'Str',
    default => sub { File::HomeDir->my_home . "/C328_7640/"}
-   #default =>  'C:\Users\dump\\',
 );
 
 has file_name => (
@@ -273,88 +272,6 @@ sub change_light_freq{
    my ($self, $ct) = @_;
    $self->commandset->set_config(freq_value=>$ct);
 }#end of methods for chaning configuration
-
-sub take_picture{
-    my $self=shift;
-    my $file_name= shift;
-    my $loc_name = $self->file_location;
-    my $dt=DateTime->now;
-
-    #check and/or set file name
-    if(!defined $file_name ){$loc_name .= $dt->strftime('%Y%m%d%H%M%S.jpg');}
-    else{$loc_name .= $file_name; }
-
-    $self->generic_snd_packet(INITIAL());
-
-    $self->generic_snd_packet(SET_PACKAGE_SIZE());
-
-    my $ack='';
-    my ($counter, $image, $image_size);
-
-    $self->generic_snd_packet(SNAPSHOT());
-
-    $ack="";
-    my $command=$self->commandset->send_command({ID=>GET_PICTURE()});
-    Dwarn 'Get picture: ' . $command;
-    $self->comm_object->w_output($command);
-    for my $i(0..10){
-        usleep(60000);
-        $ack .= $self->comm_object->comm_read();
-        if(($counter , my $i0, my $i1, my $i2, $image)
-           =  $ack=~/......(..)..........(..)(..)(..)(.*)/){
-            Dwarn 'rec 4: ' . $ack;
-            $ack="";
-            $image_size = ceil(hex($i2.$i1.$i0)/506);
-            $image = $3;
-            
-            last;        
-        }
-        return 0 if($i==10);
-    }
-    open (my $file, '>>',$loc_name);
-    binmode $file;
-
-    for my $ack_counter(0..$image_size+1){
-        $command=$self->commandset->send_command({ID=>ACK(),
-                                            P1=>'00',
-                                            P2=>'00',
-                                            P3=>sprintf( "%02x", $ack_counter),
-                                            P4=>sprintf( "%02x", 0), 
-                                            });
-        #Dwarn 'ack ' . $command;
-        $self->comm_object->w_output($command);
-        usleep(60000);
-        my $image_data = $self->comm_object->comm_read();
-        if( $image_data ne ''){
-           $image_data = substr($image_data, 8, -4);
-           print {$file} join '', map{ chr hex $_} grep($_ ne "", split /(..)/ , $image_data);
-        }
-    }                                        
-    close ($file);
-    
-    Dwarn 'write ' . $command;
-    $self->comm_object->w_output($command);
-    for my $i(0..10){
-        usleep(60000);
-        $ack .= $self->comm_object->comm_read();
-        Dwarn 'rec 5: ' . $ack;
-        last if( $ack=~/......(..)..../);
-        return 0 if($i==10);
-    }
-    
-    my $temp =$self->commandset->send_command({ID=>ACK(),
-                    P1=>'0e',
-                    P2=>$counter,
-                    P3=>'00',
-                    P4=>'00',
-                    });
-        Dwarn 'response ' . $temp;
-        $self->comm_object->w_output($temp);
-        
-    Dwarn $ack;
-    
-    return $ack;
-}
 
 no Moose;
 __PACKAGE__->meta->make_immutable();

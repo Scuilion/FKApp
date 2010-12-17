@@ -5,3 +5,5 @@ koi8
 hashObject.pm
 cover_db/*
 *.swp
+*.swo
+WriteFile7.pl
