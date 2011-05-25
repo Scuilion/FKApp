@@ -60,6 +60,9 @@ around qw(snd_rec_resp) => sub{
    my $self=shift;
    my $commandset = shift;
    my $param = shift;
+   my $file = shift;
+
+DwarnN $file;
 
    if(BAUD_115200 eq $commandset->configuration->{baudrate}){
       $self->utime(60000);
@@ -126,7 +129,6 @@ sub ack_it{
    my $self = shift;
    my $cmdset = shift;
    my $Param= shift;
-   Dwarn 'ack it man';
    $self->comm_object->w_output( $cmdset->send_command( {ID=> ACK(),
                                                          P1=>$Param->{'p1'},
                                                          P2=>$Param->{'p2'},

@@ -39,15 +39,17 @@ has commandset => (
 has file_location =>(
    is => 'rw',
    isa => 'Str',
-   default => sub { File::HomeDir->my_home . "/C328_7640/"}
+   default => sub { File::HomeDir->my_home . "/C328_7640/"},
+   lazy=>1,
 );
 
 has file_name => (
    is => 'rw',
    isa => 'Str',
    default => '',
+   lazy=>1,
 );
-
+#TODO: Will allow for a smarter handling without file non-sense
 has file_handle => (
    is => 'rw',
    isa => 'FileHandle',
@@ -130,6 +132,7 @@ after qw(snapshot) => sub{#lets try and reset the device
 sub _build_C328_controller{
     my $self=shift;
     Device::CoMedia::C328_7640::Communication::Serial::RS232::CommController->new(comm_port=>$self->comm_port) }
+
 sub _build_command_list{ Device::CoMedia::C328_7640::CommandSet->new() }
 
 sub _sync_obj_builder {
@@ -139,28 +142,24 @@ sub _sync_obj_builder {
                                                     command=> SYNC(),
                                                     respond=> 1,
                                                     ) }
-
 sub _init_obj_builder {
    my $self=shift;
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
                                                     comm_object => $self->comm_object,
                                                     command=> INITIAL(),
                                                     ) }
-
 sub _pack_obj_builder {
    my $self=shift;
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
                                                     comm_object => $self->comm_object,
                                                     command=> SET_PACKAGE_SIZE(),
                                                     ) }
-
 sub _snap_obj_builder {
    my $self=shift;
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
                                                     comm_object => $self->comm_object,
                                                     command=> SNAPSHOT(),
                                                     ) }
-
 sub _get_obj_builder {
    my $self=shift;
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1, 
@@ -173,7 +172,6 @@ sub _reset_obj_builder {
                                                     comm_object => $self->comm_object,
                                                     command=> RESET(),
                                                     ) }
-
 sub _data_obj_builder {
    my $self=shift;
    Device::CoMedia::C328_7640::CommandProtocol->new(repeats=>1,
@@ -181,13 +179,14 @@ sub _data_obj_builder {
                                                     command=> DATA(),
                                                     respond=> 1,
                                                     ) }
-
-
 #end of builders for command objects
-
+sub init{
+   my $self = shift;
+   DwarnN $self;
+}
 sub sync{
    my $self = shift;
-   Dwarn 'in sysnc';
+   Dwarn 'in sync';
    return $self->sync_cmd->snd_rec_resp($self->commandset);
 }
 
@@ -212,7 +211,7 @@ sub snapshot{
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
-   Dwarn $res = $self->get_cmd->snd_rec_resp($self->commandset, $self->return_value);
+   Dwarn $res = $self->get_cmd->snd_rec_resp($self->commandset, $self->return_value, $self->file_handle);
    $self->set_ret_v(error=>$res->{error});
    return $res if($res->{error} ne '00');
 
@@ -261,7 +260,8 @@ sub set_baudrate{
     my ($self, $ct) = @_;
 
     if( $ct ~~ [BAUD_7200(), BAUD_9600(), BAUD_14400(), BAUD_19200(), BAUD_28800(), BAUD_38400(), BAUD_57600(), BAUD_115200()] ){
-        $self->baud_cmd->commandset->set_config(baudrate=>$ct);
+        #$self->baud_cmd->commandset->set_config(baudrate=>$ct);
+        $self->commandset->set_config(baudrate=>$ct);
     }
     else{
       die 'baudrate not valid';
