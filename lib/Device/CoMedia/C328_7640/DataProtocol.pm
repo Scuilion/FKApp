@@ -19,7 +19,7 @@ sub snd_rec_data{
    DwarnN $file_handle;
    my $command;
 
-open(my $file, '>>', 'C:/Users/Kevin/C328_7640/filename.jpg');
+open(my $file, '>>', 'C:/Users/Kevin/C328_7640/filename' . $file_handle. '.jpg');
 binmode $file;
    for my $ack_counter(0..$packet_qty+1){
       #Dwarn $ack_counter;
